@@ -6,7 +6,6 @@
     <title>TFGC | Matchplay Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Firebase SDK (Compat Version fuer statische HTML) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
@@ -55,7 +54,6 @@
 </head>
 <body class="p-4 max-w-md mx-auto min-h-screen flex flex-col justify-between">
 
-    <!-- TUERSTEHER: Passwortabfrage -->
     <script>
         if (localStorage.getItem('tfgc_domain_auth') !== 'TFGC') {
             let pwd = prompt("Privater Bereich. Bitte Passwort eingeben:");
@@ -68,21 +66,18 @@
         }
     </script>
 
-    <!-- START SCREEN -->
     <div id="screen-start" class="space-y-6 w-full">
         <div class="text-center my-6">
             <h1 class="text-3xl font-bold tracking-wider uppercase text-white">TFGC | Matchplay Tracker</h1>
             <p class="text-xs text-emerald-500 uppercase tracking-widest mt-1">THE FLOATING GREEN CLUB @ GOLF & MORE</p>
         </div>
 
-        <!-- AUTO-SAVE RESUME CONTAINER -->
         <div id="resume-match-container" class="hidden golf-bg p-4 rounded-xl border border-emerald-600 space-y-3 shadow-lg shadow-emerald-900/20">
             <h2 class="text-sm font-bold text-emerald-500 uppercase text-center">Spiel läuft noch!</h2>
             <button onclick="resumeMatch()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-sm transition">Aktuelle Runde fortsetzen</button>
             <button onclick="discardMatch()" class="w-full bg-red-900/30 hover:bg-red-900/50 text-red-400 font-bold py-2 rounded-lg text-xs transition border border-red-900/50">Laufendes Spiel verwerfen</button>
         </div>
 
-        <!-- PLANNED MATCHES CONTAINER -->
         <div id="planned-matches-container" class="hidden golf-bg p-4 rounded-xl border border-blue-600 space-y-3 shadow-lg shadow-blue-900/20">
             <h2 class="text-sm font-bold text-blue-400 uppercase text-center">Geplante Spiele (Cloud)</h2>
             <div id="planned-matches-list" class="space-y-2"></div>
@@ -213,7 +208,6 @@
             </div>
         </div>
         
-        <!-- ADMIN AREA ICON -->
         <div class="flex justify-center items-center mt-6 mb-4">
             <button onclick="checkAdminPassword()" class="text-zinc-700 hover:text-emerald-500 transition p-2 rounded-full hover:bg-zinc-900" aria-label="Datenverwaltung">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -224,7 +218,6 @@
         </div>
     </div>
 
-    <!-- GAME SCREEN -->
     <div id="screen-game" class="hidden space-y-4 w-full flex-grow flex flex-col justify-between">
         <div>
             <div class="flex justify-between items-start border-b border-zinc-800 pb-3">
@@ -266,7 +259,6 @@
         </div>
     </div>
 
-    <!-- Popup Modal Rules & Match -->
     <div id="global-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="golf-bg border border-zinc-800 w-full max-w-sm rounded-xl p-4 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
@@ -277,7 +269,6 @@
         </div>
     </div>
 
-    <!-- Admin Modal -->
     <div id="admin-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="golf-bg border border-zinc-800 w-full max-w-sm rounded-xl p-4 space-y-4">
             <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
@@ -291,14 +282,13 @@
             <div class="mt-4 pt-4 border-t border-zinc-900 space-y-2">
                 <h4 class="text-[11px] font-bold text-emerald-600 uppercase">Änderungshistorie</h4>
                 <ul class="text-[10px] text-gray-400 space-y-1 list-disc pl-4">
+                    <li><span class="text-gray-200 font-bold">v1.6:</span> Abwärtskompatibilität für historische Spiele repariert (NaN-Fix bei fehlenden Jokern) und Listen-Konvertierung abgesichert.</li>
                     <li><span class="text-gray-200 font-bold">v1.5:</span> Lady-Punkteabzug entfernt, Joker-Finanzen verrechnet, Joker-Verteilung überarbeitet (max -1 pro Bahn).</li>
-                    <li><span class="text-gray-200 font-bold">v1.4:</span> Live-Score-Fix, Erweiterte Joker-Optionen (-1 bis -3), Mulligan-Bestätigung & Planungs-Verwaltung.</li>
-                    <li><span class="text-gray-200 font-bold">v1.3:</span> Live-Scorekarte während des Spiels, Vorgabe-Joker-System (Lotto) und Spieltags-Planer integriert.</li>
                 </ul>
             </div>
             
             <div class="text-center text-[10px] text-gray-600 font-mono mt-4 pt-2 border-t border-zinc-900">
-                Version 1.5 | Stand: Juni 2026
+                Version 1.6 | Stand: Juni 2026
             </div>
         </div>
     </div>
@@ -365,8 +355,20 @@
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     if (data.beers) globalBeers = data.beers;
-                    if (data.archive) archive = data.archive;
-                    if (data.planned) plannedMatches = data.planned || [];
+                    
+                    // Datentypen absichern, falls Firebase Objekte statt Arrays liefert
+                    if (data.archive) {
+                        archive = Array.isArray(data.archive) ? data.archive : Object.values(data.archive);
+                    } else {
+                        archive = [];
+                    }
+                    
+                    if (data.planned) {
+                        plannedMatches = Array.isArray(data.planned) ? data.planned : Object.values(data.planned);
+                    } else {
+                        plannedMatches = [];
+                    }
+                    
                     if (data.lastUpdate) lastBeerUpdate = data.lastUpdate;
                     
                     document.getElementById('global-beers-p1').innerText = globalBeers.p1;
@@ -508,7 +510,6 @@
         function generateRandomVorgaben(holesArray, count) {
             let available = [];
             holesArray.forEach((h, i) => { if (h.par !== null) available.push(i); });
-            // Fisher-Yates Shuffle um Duplikate zu vermeiden (Bahnen werden einmalig vergeben)
             for (let i = available.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [available[i], available[j]] = [available[j], available[i]];
@@ -544,7 +545,6 @@
                 number: index + 1, par: par, p1Strokes: null, p2Strokes: null, p1Lady: false, p2Lady: false, p1MulliganHole: false, p2MulliganHole: false, p1Vorgabe: 0, p2Vorgabe: 0
             }));
 
-            // Bahn-Lotto ausführen (strikte Verteilung, maximal -1 pro Bahn)
             if (p1VorgabeCount > 0) {
                 generateRandomVorgaben(holesData, p1VorgabeCount).forEach(idx => holesData[idx].p1Vorgabe = 1);
             }
@@ -655,8 +655,8 @@
             const m = plannedMatches[idx];
             document.getElementById('course-select').value = m.course;
             document.querySelector(`input[name="gm-role"][value="${m.gm}"]`).checked = true;
-            document.getElementById('p1-vorgabe').value = m.p1.boughtVorgaben;
-            document.getElementById('p2-vorgabe').value = m.p2.boughtVorgaben;
+            document.getElementById('p1-vorgabe').value = m.p1.boughtVorgaben || 0;
+            document.getElementById('p2-vorgabe').value = m.p2.boughtVorgaben || 0;
             
             document.querySelector(`input[name="match-mode"][value="plan"]`).checked = true;
             toggleMatchMode();
@@ -706,8 +706,8 @@
             const m1Html = hole.p1MulliganHole ? `<span class="text-[10px] text-blue-400 font-bold uppercase py-1">Genutzt</span>` : (currentMatch.p1.mulliganUsed ? `<button disabled class="text-xs btn-mulligan-disabled px-2.5 py-1 rounded-lg font-medium">Mulligan</button>` : `<button onclick="triggerMulligan('p1')" class="text-xs btn-mulligan-active px-2.5 py-1 rounded-lg font-medium">Mulligan</button>`);
             const m2Html = hole.p2MulliganHole ? `<span class="text-[10px] text-blue-400 font-bold uppercase py-1">Genutzt</span>` : (currentMatch.p2.mulliganUsed ? `<button disabled class="text-xs btn-mulligan-disabled px-2.5 py-1 rounded-lg font-medium">Mulligan</button>` : `<button onclick="triggerMulligan('p2')" class="text-xs btn-mulligan-active px-2.5 py-1 rounded-lg font-medium">Mulligan</button>`);
 
-            const v1Html = hole.p1Vorgabe > 0 ? `<span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wide bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-800 ml-2">[-1]</span>` : '';
-            const v2Html = hole.p2Vorgabe > 0 ? `<span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wide bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-800 ml-2">[-1]</span>` : '';
+            const v1Html = (hole.p1Vorgabe || 0) > 0 ? `<span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wide bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-800 ml-2">[-1]</span>` : '';
+            const v2Html = (hole.p2Vorgabe || 0) > 0 ? `<span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wide bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-800 ml-2">[-1]</span>` : '';
 
             zone.innerHTML = `
                 <div class="flex justify-between items-center border-b border-zinc-900 pb-2"><span class="text-xl font-bold text-emerald-500">Bahn ${hole.number}</span><span class="text-xs bg-zinc-900 px-3 py-1 rounded-full text-gray-300 font-semibold tracking-wide">PAR ${hole.par}</span></div>
@@ -736,8 +736,8 @@
             let p1Wins = 0; let p2Wins = 0;
             matchObj.holes.forEach(h => {
                 if(h.par !== null && h.p1Strokes !== null && h.p2Strokes !== null) {
-                    let effS1 = h.p1Strokes - h.p1Vorgabe;
-                    let effS2 = h.p2Strokes - h.p2Vorgabe;
+                    let effS1 = h.p1Strokes - (h.p1Vorgabe || 0);
+                    let effS2 = h.p2Strokes - (h.p2Vorgabe || 0);
                     
                     if(effS1 < effS2) p1Wins++;
                     else if(effS2 < effS1) p2Wins++;
@@ -813,8 +813,8 @@
             const hole = currentMatch.holes[currentHoleIndex]; const previewEl = document.getElementById('hole-result-preview'); if(!previewEl) return;
             const s1 = hole.p1Strokes; const s2 = hole.p2Strokes; if (s1 === null || s2 === null) { previewEl.innerText = "Warte auf Schläge..."; return; }
             
-            let effS1 = s1 - hole.p1Vorgabe;
-            let effS2 = s2 - hole.p2Vorgabe;
+            let effS1 = s1 - (hole.p1Vorgabe || 0);
+            let effS2 = s2 - (hole.p2Vorgabe || 0);
             const diff1 = effS1 - hole.par; const diff2 = effS2 - hole.par;
 
             if (s1 === 1 && s2 === 1) previewEl.innerText = "Beide HIO! Punkt an höheren HCP-Spieler.";
@@ -843,7 +843,8 @@
             let totalP1Points = 0; let totalP2Points = 0;
             matchObj.holes.forEach((h) => {
                 if(h.par === null || h.p1Strokes === null || h.p2Strokes === null) return;
-                let effS1 = h.p1Strokes - h.p1Vorgabe; let effS2 = h.p2Strokes - h.p2Vorgabe;
+                let effS1 = h.p1Strokes - (h.p1Vorgabe || 0); 
+                let effS2 = h.p2Strokes - (h.p2Vorgabe || 0);
                 let p1HolePoints = 0; let p2HolePoints = 0;
                 if (h.p1Strokes === 1 && h.p2Strokes === 1) { if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1; }
                 else if (h.p1Strokes === 1) p1HolePoints = 10; else if (h.p2Strokes === 1) p2HolePoints = 10;
@@ -856,8 +857,8 @@
             let p1BaseWin = totalP1Points - totalP2Points;
             let p2BaseWin = totalP2Points - totalP1Points;
             
-            let p1Cost = matchObj.p1.boughtVorgaben * 0.75;
-            let p2Cost = matchObj.p2.boughtVorgaben * 0.75;
+            let p1Cost = (matchObj.p1.boughtVorgaben || 0) * 0.75;
+            let p2Cost = (matchObj.p2.boughtVorgaben || 0) * 0.75;
             
             let p1Net = p1BaseWin - p1Cost;
             let p2Net = p2BaseWin - p2Cost;
@@ -872,10 +873,10 @@
                 html += `<div class="font-bold text-gray-300">Reguläres Spiel: ${matchObj.p2.nick} gewinnt ${p2BaseWin} Euro</div>`;
             }
 
-            if (matchObj.p1.boughtVorgaben > 0) {
+            if ((matchObj.p1.boughtVorgaben || 0) > 0) {
                 html += `<div class="text-gray-400">Abzug ${matchObj.p1.nick}: Minus ${matchObj.p1.boughtVorgaben}x Joker (-${p1Cost.toFixed(2)} Euro)</div>`;
             }
-            if (matchObj.p2.boughtVorgaben > 0) {
+            if ((matchObj.p2.boughtVorgaben || 0) > 0) {
                 html += `<div class="text-gray-400">Abzug ${matchObj.p2.nick}: Minus ${matchObj.p2.boughtVorgaben}x Joker (-${p2Cost.toFixed(2)} Euro)</div>`;
             }
 
@@ -899,8 +900,8 @@
                 
                 if (h.p1Strokes !== null && h.p2Strokes !== null) {
                     totalPar += h.par; totalS1 += h.p1Strokes; totalS2 += h.p2Strokes;
-                    let effS1 = h.p1Strokes - h.p1Vorgabe;
-                    let effS2 = h.p2Strokes - h.p2Vorgabe;
+                    let effS1 = h.p1Strokes - (h.p1Vorgabe || 0);
+                    let effS2 = h.p2Strokes - (h.p2Vorgabe || 0);
 
                     if (h.p1Strokes === 1 && h.p2Strokes === 1) {
                         if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1;
@@ -920,11 +921,11 @@
 
                 if(h.p1Lady) s1Str = `<span class="font-bold text-red-400">${h.p1Strokes || ''}(L)</span>`;
                 if(h.p1MulliganHole) s1Str += ` <span class="text-blue-400 font-bold text-[9px]">[M]</span>`;
-                if(h.p1Vorgabe > 0) s1Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
+                if((h.p1Vorgabe || 0) > 0) s1Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
                 
                 if(h.p2Lady) s2Str = `<span class="font-bold text-red-400">${h.p2Strokes || ''}(L)</span>`;
                 if(h.p2MulliganHole) s2Str += ` <span class="text-blue-400 font-bold text-[9px]">[M]</span>`;
-                if(h.p2Vorgabe > 0) s2Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
+                if((h.p2Vorgabe || 0) > 0) s2Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
                 
                 let p1HoleDisplay = h.p1Strokes !== null ? p1HolePoints : '-';
                 let p2HoleDisplay = h.p2Strokes !== null ? p2HolePoints : '-';
@@ -955,8 +956,8 @@
                 let p1HolePoints = 0; let p2HolePoints = 0;
                 const s1 = hole.p1Strokes; const s2 = hole.p2Strokes;
                 if (s1 !== null && s2 !== null) {
-                    let effS1 = s1 - hole.p1Vorgabe;
-                    let effS2 = s2 - hole.p2Vorgabe;
+                    let effS1 = s1 - (hole.p1Vorgabe || 0);
+                    let effS2 = s2 - (hole.p2Vorgabe || 0);
 
                     if (s1 === 1 && s2 === 1) { if (currentMatch.p1.hcp > currentMatch.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1; }
                     else if (s1 === 1) p1HolePoints = 10; else if (s2 === 1) p2HolePoints = 10;
@@ -969,7 +970,6 @@
             currentMatch.holes.forEach(h => { if(h.p1Lady) p1Ladys++; if(h.p2Lady) p2Ladys++; });
             currentMatch.p1.roundLadys = p1Ladys; currentMatch.p2.roundLadys = p2Ladys;
             
-            // WICHTIG: Keine Minus-Punkte mehr für Ladys im Score
             document.getElementById('hero-p1-points').innerText = p1TotalPoints; 
             document.getElementById('hero-p2-points').innerText = p2TotalPoints;
         }
@@ -980,8 +980,8 @@
                 if(h.par === null) return;
                 let p1HolePoints = 0; let p2HolePoints = 0;
                 if (h.p1Strokes !== null && h.p2Strokes !== null) {
-                    let effS1 = h.p1Strokes - h.p1Vorgabe;
-                    let effS2 = h.p2Strokes - h.p2Vorgabe;
+                    let effS1 = h.p1Strokes - (h.p1Vorgabe || 0);
+                    let effS2 = h.p2Strokes - (h.p2Vorgabe || 0);
 
                     if (h.p1Strokes === 1 && h.p2Strokes === 1) { if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1; }
                     else if (h.p1Strokes === 1) p1HolePoints = 10; else if (h.p2Strokes === 1) p2HolePoints = 10;
@@ -994,8 +994,8 @@
             
             let p1BaseWin = totalP1Points - totalP2Points;
             let p2BaseWin = totalP2Points - totalP1Points;
-            let p1Cost = matchObj.p1.boughtVorgaben * 0.75;
-            let p2Cost = matchObj.p2.boughtVorgaben * 0.75;
+            let p1Cost = (matchObj.p1.boughtVorgaben || 0) * 0.75;
+            let p2Cost = (matchObj.p2.boughtVorgaben || 0) * 0.75;
             let p1Net = p1BaseWin - p1Cost;
             let p2Net = p2BaseWin - p2Cost;
 
@@ -1008,10 +1008,10 @@
                 moneyResult += "Reguläres Spiel: " + matchObj.p2.nick + " gewinnt " + p2BaseWin + " Euro\n";
             }
 
-            if (matchObj.p1.boughtVorgaben > 0) {
+            if ((matchObj.p1.boughtVorgaben || 0) > 0) {
                 moneyResult += "Abzug " + matchObj.p1.nick + ": Minus " + matchObj.p1.boughtVorgaben + "x Joker (-" + p1Cost.toFixed(2) + " Euro)\n";
             }
-            if (matchObj.p2.boughtVorgaben > 0) {
+            if ((matchObj.p2.boughtVorgaben || 0) > 0) {
                 moneyResult += "Abzug " + matchObj.p2.nick + ": Minus " + matchObj.p2.boughtVorgaben + "x Joker (-" + p2Cost.toFixed(2) + " Euro)\n";
             }
 
@@ -1077,8 +1077,8 @@
                 let p1Points = 0; let p2Points = 0;
                 m.holes.forEach(h => {
                     if (h.par !== null && h.p1Strokes !== null && h.p2Strokes !== null) {
-                        let effS1 = h.p1Strokes - h.p1Vorgabe;
-                        let effS2 = h.p2Strokes - h.p2Vorgabe;
+                        let effS1 = h.p1Strokes - (h.p1Vorgabe || 0);
+                        let effS2 = h.p2Strokes - (h.p2Vorgabe || 0);
                         if (effS1 < effS2) p1Points += 2; else if (effS2 < effS1) p2Points += 2;
                     }
                 });
