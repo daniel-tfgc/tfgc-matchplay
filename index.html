@@ -47,11 +47,15 @@
             50% { transform: rotateX(360deg) scale(1.1); color: #1ABC9C; }
             100% { transform: rotateX(720deg) scale(1); }
         }
+        
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
     </style>
 </head>
 <body class="p-4 max-w-md mx-auto min-h-screen flex flex-col justify-between">
 
-    <!-- TUERSTEHER: Passwortabfrage fuer die Domain -->
+    <!-- TUERSTEHER: Passwortabfrage -->
     <script>
         if (localStorage.getItem('tfgc_domain_auth') !== 'TFGC') {
             let pwd = prompt("Privater Bereich. Bitte Passwort eingeben:");
@@ -78,6 +82,31 @@
             <button onclick="discardMatch()" class="w-full bg-red-900/30 hover:bg-red-900/50 text-red-400 font-bold py-2 rounded-lg text-xs transition border border-red-900/50">Laufendes Spiel verwerfen</button>
         </div>
 
+        <!-- PLANNED MATCHES CONTAINER -->
+        <div id="planned-matches-container" class="hidden golf-bg p-4 rounded-xl border border-blue-600 space-y-3 shadow-lg shadow-blue-900/20">
+            <h2 class="text-sm font-bold text-blue-400 uppercase text-center">Geplante Spiele (Cloud)</h2>
+            <div id="planned-matches-list" class="space-y-2"></div>
+        </div>
+
+        <div class="golf-bg p-4 rounded-xl border border-zinc-800 space-y-3">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-600">Spielmodus</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center gap-2 bg-black border border-zinc-800 p-2.5 rounded-lg cursor-pointer select-none transition">
+                    <input type="radio" name="match-mode" value="now" checked onchange="toggleMatchMode()" class="w-4 h-4 accent-emerald-500">
+                    <span class="text-[11px] font-bold text-white uppercase tracking-wide">Sofort starten</span>
+                </label>
+                <label class="flex items-center gap-2 bg-black border border-zinc-800 p-2.5 rounded-lg cursor-pointer select-none transition">
+                    <input type="radio" name="match-mode" value="plan" onchange="toggleMatchMode()" class="w-4 h-4 accent-emerald-500">
+                    <span class="text-[11px] font-bold text-white uppercase tracking-wide">Spieltag planen</span>
+                </label>
+            </div>
+            
+            <div id="datetime-container" class="hidden mt-3 space-y-2 pt-2 border-t border-zinc-800">
+                <label class="block text-[10px] uppercase text-gray-400 font-bold">Wann wird gespielt?</label>
+                <input type="datetime-local" id="match-datetime" class="w-full bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600">
+            </div>
+        </div>
+
         <div class="golf-bg p-4 rounded-xl border border-zinc-800 space-y-3">
             <div>
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-600">Wer ist Game Master?</h2>
@@ -98,33 +127,33 @@
             </button>
         </div>
 
-        <div class="golf-bg p-4 rounded-xl border border-zinc-800 space-y-2">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-600">Spieltag</h2>
-            <div id="start-date-display" class="bg-black border border-zinc-800 rounded p-2 text-sm text-white font-sans text-center"></div>
-        </div>
-
-        <div class="golf-bg p-4 rounded-xl border border-zinc-800 space-y-2">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-600">Regeln und Bedienung</h2>
-            <button onclick="openRulesModal()" class="w-full bg-black hover:bg-zinc-900 border border-zinc-800 text-white rounded p-2 text-sm text-center font-sans font-medium transition">
-                Lesen
-            </button>
-        </div>
-
         <div class="golf-bg p-4 rounded-xl border border-zinc-800 space-y-4">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-600">Spieler-Setup</h2>
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-600">Spieler Setup</h2>
             <div>
                 <label class="block text-xs uppercase text-gray-400 mb-1 font-bold">Spieler 1: Schmelle</label>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-2 mb-2">
                     <input type="text" id="p1-nick" placeholder="Spielname" value="Schmelle" class="bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600">
                     <input type="number" step="0.1" max="54" id="p1-hcp" value="17.1" class="bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600" placeholder="HCP">
                 </div>
+                <select id="p1-vorgabe" class="w-full bg-zinc-900 border border-zinc-800 rounded p-2 text-[11px] text-emerald-400 focus:outline-none font-medium">
+                    <option value="0">Kein Joker (0,00 EUR)</option>
+                    <option value="1">Ein Joker für -1 Schlag auf Zufallsbahn (0,75 EUR)</option>
+                    <option value="2">Zwei Joker für -2 Schläge auf Zufallsbahnen (1,50 EUR)</option>
+                    <option value="3">Drei Joker für -3 Schläge auf Zufallsbahnen (2,25 EUR)</option>
+                </select>
             </div>
-            <div>
+            <div class="border-t border-zinc-800 pt-3">
                 <label class="block text-xs uppercase text-gray-400 mb-1 font-bold">Spieler 2: König</label>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-2 mb-2">
                     <input type="text" id="p2-nick" placeholder="Spielname" value="König" class="bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600">
                     <input type="number" step="0.1" max="54" id="p2-hcp" value="51.8" class="bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600" placeholder="HCP">
                 </div>
+                <select id="p2-vorgabe" class="w-full bg-zinc-900 border border-zinc-800 rounded p-2 text-[11px] text-emerald-400 focus:outline-none font-medium">
+                    <option value="0">Kein Joker (0,00 EUR)</option>
+                    <option value="1">Ein Joker für -1 Schlag auf Zufallsbahn (0,75 EUR)</option>
+                    <option value="2">Zwei Joker für -2 Schläge auf Zufallsbahnen (1,50 EUR)</option>
+                    <option value="3">Drei Joker für -3 Schläge auf Zufallsbahnen (2,25 EUR)</option>
+                </select>
             </div>
         </div>
 
@@ -144,9 +173,15 @@
                 </button>
                 <div id="honor-result" class="text-center text-xs font-medium text-emerald-400 font-mono hidden"></div>
             </div>
-            <button onclick="startMatch()" class="w-full tfgc-bg-green hover:opacity-90 text-white font-bold py-3 rounded-xl transition text-center block uppercase tracking-wider shadow-lg">
-                Match Starten
-            </button>
+            
+            <div class="pt-2">
+                <button id="btn-start-now" onclick="startMatchHandler(false)" class="w-full tfgc-bg-green hover:opacity-90 text-white font-bold py-3.5 rounded-xl transition text-center uppercase tracking-wider shadow-lg text-sm">
+                    Jetzt Starten
+                </button>
+                <button id="btn-start-plan" onclick="startMatchHandler(true)" class="hidden w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl transition text-center uppercase tracking-wider shadow-lg text-sm border border-blue-700">
+                    Planen & Teilen
+                </button>
+            </div>
         </div>
 
         <div class="golf-bg p-4 rounded-xl border border-zinc-800 mt-4 space-y-3">
@@ -192,22 +227,25 @@
     <!-- GAME SCREEN -->
     <div id="screen-game" class="hidden space-y-4 w-full flex-grow flex flex-col justify-between">
         <div>
-            <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+            <div class="flex justify-between items-start border-b border-zinc-800 pb-3">
                 <div>
                     <h2 id="game-course-title" class="text-xl font-bold text-white uppercase tracking-wide">Nord</h2>
                     <p id="game-date" class="text-xs text-gray-500 font-medium"></p>
                 </div>
-                <button onclick="cancelMatch()" class="text-xs bg-zinc-900 hover:bg-zinc-800 px-3 py-1.5 rounded text-gray-400 transition">Abbrechen</button>
+                <div class="flex flex-col gap-2 items-end">
+                    <button onclick="showLiveScorecard()" class="text-xs bg-emerald-900 hover:bg-emerald-800 px-3 py-1.5 rounded text-emerald-100 transition border border-emerald-700 font-medium tracking-wide">Live Score</button>
+                    <button onclick="cancelMatch()" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 px-2 py-1 rounded text-gray-500 transition">Abbrechen</button>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 my-4">
-                <div class="golf-bg p-3 rounded-xl border border-zinc-800 text-center">
+                <div class="golf-bg p-3 rounded-xl border border-zinc-800 text-center relative">
                     <div class="font-bold text-lg text-white">Schmelle</div>
                     <div id="hero-p1-nick" class="text-[11px] text-gray-400 truncate -mt-1 italic tracking-wide"></div>
                     <div id="hero-p1-points" class="text-5xl font-black text-emerald-500 my-1">0</div>
                     <div class="text-xs text-gray-400 uppercase tracking-wider text-[10px]">Spielpunkte</div>
                 </div>
-                <div class="golf-bg p-3 rounded-xl border border-zinc-800 text-center">
+                <div class="golf-bg p-3 rounded-xl border border-zinc-800 text-center relative">
                     <div class="font-bold text-lg text-white">König</div>
                     <div id="hero-p2-nick" class="text-[11px] text-gray-400 truncate -mt-1 italic tracking-wide"></div>
                     <div id="hero-p2-points" class="text-5xl font-black text-emerald-500 my-1">0</div>
@@ -233,7 +271,7 @@
         <div class="golf-bg border border-zinc-800 w-full max-w-sm rounded-xl p-4 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
                 <h3 id="modal-title" class="text-sm font-bold text-emerald-500 uppercase">Details</h3>
-                <button onclick="closeModal()" class="text-xs bg-zinc-900 px-2 py-1 rounded text-gray-400">Schließen</button>
+                <button onclick="closeModal()" class="text-xs bg-zinc-900 px-2 py-1 rounded text-gray-400 hover:bg-zinc-800">Schließen</button>
             </div>
             <div id="modal-content" class="overflow-x-auto text-sm"></div>
         </div>
@@ -253,13 +291,14 @@
             <div class="mt-4 pt-4 border-t border-zinc-900 space-y-2">
                 <h4 class="text-[11px] font-bold text-emerald-600 uppercase">Änderungshistorie</h4>
                 <ul class="text-[10px] text-gray-400 space-y-1 list-disc pl-4">
-                    <li><span class="text-gray-200 font-bold">v1.2:</span> Zufallsgenerator für Game Master hinzugefügt.</li>
-                    <li><span class="text-gray-200 font-bold">v1.0:</span> Cloud-Synchronisation und Domain aktiv.</li>
+                    <li><span class="text-gray-200 font-bold">v1.5:</span> Lady-Punkteabzug entfernt, Joker-Finanzen verrechnet, Joker-Verteilung überarbeitet (max -1 pro Bahn).</li>
+                    <li><span class="text-gray-200 font-bold">v1.4:</span> Live-Score-Fix, Erweiterte Joker-Optionen (-1 bis -3), Mulligan-Bestätigung & Planungs-Verwaltung.</li>
+                    <li><span class="text-gray-200 font-bold">v1.3:</span> Live-Scorekarte während des Spiels, Vorgabe-Joker-System (Lotto) und Spieltags-Planer integriert.</li>
                 </ul>
             </div>
             
             <div class="text-center text-[10px] text-gray-600 font-mono mt-4 pt-2 border-t border-zinc-900">
-                Version 1.2 | Stand: Juni 2026
+                Version 1.5 | Stand: Juni 2026
             </div>
         </div>
     </div>
@@ -284,17 +323,38 @@
         let currentHoleIndex = 0;
         let globalBeers = { p1: 0, p2: 0 };
         let archive = [];
+        let plannedMatches = [];
         let lastBeerUpdate = "Wird geladen...";
 
-        document.getElementById('start-date-display').innerText = new Date().toLocaleDateString('de-DE', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-        });
+        // Setze Standard-Datum auf aktuell
+        const nowLocal = new Date();
+        nowLocal.setMinutes(nowLocal.getMinutes() - nowLocal.getTimezoneOffset());
+        document.getElementById('match-datetime').value = nowLocal.toISOString().slice(0,16);
+
+        // --- UI TOGGLE: SOFORT VS PLANEN ---
+        function toggleMatchMode() {
+            const mode = document.querySelector('input[name="match-mode"]:checked').value;
+            const dtContainer = document.getElementById('datetime-container');
+            const btnNow = document.getElementById('btn-start-now');
+            const btnPlan = document.getElementById('btn-start-plan');
+            
+            if(mode === 'plan') {
+                dtContainer.classList.remove('hidden');
+                btnNow.classList.add('hidden');
+                btnPlan.classList.remove('hidden');
+            } else {
+                dtContainer.classList.add('hidden');
+                btnNow.classList.remove('hidden');
+                btnPlan.classList.add('hidden');
+            }
+        }
 
         // --- CLOUD SYNC LOGIK ---
         function syncToCloud() {
             db.ref('tfgc_data').set({
                 beers: globalBeers,
                 archive: archive,
+                planned: plannedMatches,
                 lastUpdate: lastBeerUpdate
             });
             document.getElementById('beer-timestamp').innerText = "Stand: " + lastBeerUpdate + " (Cloud)";
@@ -306,15 +366,18 @@
                     const data = snapshot.val();
                     if (data.beers) globalBeers = data.beers;
                     if (data.archive) archive = data.archive;
+                    if (data.planned) plannedMatches = data.planned || [];
                     if (data.lastUpdate) lastBeerUpdate = data.lastUpdate;
                     
                     document.getElementById('global-beers-p1').innerText = globalBeers.p1;
                     document.getElementById('global-beers-p2').innerText = globalBeers.p2;
                     document.getElementById('beer-timestamp').innerText = "Stand: " + lastBeerUpdate + " (Cloud)";
                     renderHistoryList();
+                    renderPlannedMatches();
                 } else {
                     document.getElementById('beer-timestamp').innerText = "Bereit (Keine Cloud-Daten gefunden)";
                     renderHistoryList();
+                    renderPlannedMatches();
                 }
             }).catch((error) => {
                 document.getElementById('beer-timestamp').innerText = "Fehler: Keine Verbindung";
@@ -425,6 +488,7 @@
                 resultDiv.classList.remove('coin-flip-anim');
                 const winner = Math.random() < 0.5 ? p1Name : p2Name;
                 resultDiv.innerText = winner + " schlägt zuerst ab!";
+                resultDiv.dataset.honor = winner;
             }, 800);
         }
 
@@ -441,27 +505,97 @@
             }
         }
 
-        function startMatch() {
+        function generateRandomVorgaben(holesArray, count) {
+            let available = [];
+            holesArray.forEach((h, i) => { if (h.par !== null) available.push(i); });
+            // Fisher-Yates Shuffle um Duplikate zu vermeiden (Bahnen werden einmalig vergeben)
+            for (let i = available.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [available[i], available[j]] = [available[j], available[i]];
+            }
+            return available.slice(0, count);
+        }
+
+        function buildMatchObject() {
+            const mode = document.querySelector('input[name="match-mode"]:checked').value;
+            let dateObj;
+            if(mode === 'now') {
+                dateObj = new Date();
+            } else {
+                const rawDate = document.getElementById('match-datetime').value;
+                dateObj = new Date(rawDate);
+            }
+            
+            const dateString = dateObj.toLocaleDateString('de-DE') + ', ' + dateObj.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'}) + ' Uhr';
+            const rawDateObj = dateObj; 
+
             const p1Nick = document.getElementById('p1-nick').value || "Schmelle";
             const p2Nick = document.getElementById('p2-nick').value || "König";
             let p1Hcp = parseFloat(document.getElementById('p1-hcp').value) || 17.1;
             let p2Hcp = parseFloat(document.getElementById('p2-hcp').value) || 51.8;
 
+            const p1VorgabeCount = parseInt(document.getElementById('p1-vorgabe').value);
+            const p2VorgabeCount = parseInt(document.getElementById('p2-vorgabe').value);
+
             const courseKey = document.getElementById('course-select').value;
             const pars = courses[courseKey];
-            const holesData = pars.map((par, index) => ({
-                number: index + 1, par: par, p1Strokes: null, p2Strokes: null, p1Lady: false, p2Lady: false, p1MulliganHole: false, p2MulliganHole: false
+            
+            let holesData = pars.map((par, index) => ({
+                number: index + 1, par: par, p1Strokes: null, p2Strokes: null, p1Lady: false, p2Lady: false, p1MulliganHole: false, p2MulliganHole: false, p1Vorgabe: 0, p2Vorgabe: 0
             }));
 
-            currentMatch = {
-                date: new Date().toLocaleDateString('de-DE'), 
+            // Bahn-Lotto ausführen (strikte Verteilung, maximal -1 pro Bahn)
+            if (p1VorgabeCount > 0) {
+                generateRandomVorgaben(holesData, p1VorgabeCount).forEach(idx => holesData[idx].p1Vorgabe = 1);
+            }
+            if (p2VorgabeCount > 0) {
+                generateRandomVorgaben(holesData, p2VorgabeCount).forEach(idx => holesData[idx].p2Vorgabe = 1);
+            }
+
+            const honorEl = document.getElementById('honor-result');
+            const honorStr = (honorEl && !honorEl.classList.contains('hidden') && honorEl.dataset.honor) ? honorEl.dataset.honor : "Nicht ausgelost";
+
+            return {
+                id: Date.now().toString(),
+                date: dateString, 
+                rawDate: rawDateObj.toISOString(),
                 course: courseKey,
                 gm: document.querySelector('input[name="gm-role"]:checked').value,
-                p1: { name: "Schmelle", nick: p1Nick, hcp: p1Hcp, points: 0, roundLadys: 0, mulliganUsed: false },
-                p2: { name: "König", nick: p2Nick, hcp: p2Hcp, points: 0, roundLadys: 0, mulliganUsed: false },
+                honor: honorStr,
+                p1: { name: "Schmelle", nick: p1Nick, hcp: p1Hcp, points: 0, roundLadys: 0, mulliganUsed: false, boughtVorgaben: p1VorgabeCount },
+                p2: { name: "König", nick: p2Nick, hcp: p2Hcp, points: 0, roundLadys: 0, mulliganUsed: false, boughtVorgaben: p2VorgabeCount },
                 holes: holesData
             };
+        }
 
+        function startMatchHandler(isPlanning) {
+            const matchObj = buildMatchObject();
+
+            if (isPlanning) {
+                plannedMatches.push(matchObj);
+                syncToCloud();
+                
+                const dObj = new Date(matchObj.rawDate);
+                const dateOnly = dObj.toLocaleDateString('de-DE');
+                const timeOnly = dObj.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
+                
+                let shareText = "TFGC MATCH GEPLANT\n\nDatum: " + dateOnly + "\nTee Time: " + timeOnly + " Uhr\nPlatz: " + matchObj.course.toUpperCase() + "\nAnlage: Golf & More Huckingen\n\nGame Master: " + matchObj.gm + "\nEhre am 1. Abschlag: " + matchObj.honor + "\nDanach Ready-Golf!";
+                
+                if (matchObj.p1.boughtVorgaben > 0 || matchObj.p2.boughtVorgaben > 0) {
+                    shareText += "\n\nGekaufte Joker-Löcher:\n- " + matchObj.p1.nick + ": " + matchObj.p1.boughtVorgaben + " Joker\n- " + matchObj.p2.nick + ": " + matchObj.p2.boughtVorgaben + " Joker";
+                }
+                shareText += "\n\nMatch ist online gespeichert und am Spieltag startbar.";
+                
+                window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText));
+                renderPlannedMatches();
+                alert("Spiel wurde erfolgreich geplant und in der Cloud gespeichert.");
+            } else {
+                executeMatchStart(matchObj);
+            }
+        }
+
+        function executeMatchStart(matchObj) {
+            currentMatch = matchObj;
             currentHoleIndex = 0;
             autoSave();
             document.getElementById('dormie-banner').classList.add('hidden');
@@ -475,6 +609,76 @@
             document.getElementById('screen-game').classList.remove('hidden');
 
             renderCurrentHole();
+        }
+
+        function renderPlannedMatches() {
+            const container = document.getElementById('planned-matches-container');
+            const listEl = document.getElementById('planned-matches-list');
+            
+            if (!plannedMatches || plannedMatches.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            listEl.innerHTML = "";
+            
+            plannedMatches.forEach((match, idx) => {
+                const item = document.createElement('div');
+                item.className = "bg-zinc-950 p-3 rounded border border-blue-900/50 space-y-2";
+                item.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-xs text-blue-400 font-bold">${match.date}</div>
+                            <div class="text-[10px] text-gray-400">Platz: ${match.course.toUpperCase()} | GM: ${match.gm}</div>
+                        </div>
+                        <button onclick="deletePlannedMatch(${idx})" class="text-red-500 hover:text-red-400 p-1 text-[10px] font-bold uppercase tracking-wider">Absagen</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="startPlannedMatch(${idx})" class="flex-1 bg-blue-800 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition">Spiel starten</button>
+                        <button onclick="editPlannedMatch(${idx})" class="bg-zinc-800 hover:bg-zinc-700 text-gray-300 font-bold py-2 px-3 rounded text-xs transition border border-zinc-700">Bearbeiten</button>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        function deletePlannedMatch(idx) {
+            if (confirm("Geplantes Spiel wirklich absagen und löschen?")) {
+                plannedMatches.splice(idx, 1);
+                syncToCloud();
+                renderPlannedMatches();
+            }
+        }
+
+        function editPlannedMatch(idx) {
+            const m = plannedMatches[idx];
+            document.getElementById('course-select').value = m.course;
+            document.querySelector(`input[name="gm-role"][value="${m.gm}"]`).checked = true;
+            document.getElementById('p1-vorgabe').value = m.p1.boughtVorgaben;
+            document.getElementById('p2-vorgabe').value = m.p2.boughtVorgaben;
+            
+            document.querySelector(`input[name="match-mode"][value="plan"]`).checked = true;
+            toggleMatchMode();
+            
+            if(m.rawDate) {
+                document.getElementById('match-datetime').value = m.rawDate.slice(0,16);
+            }
+            
+            plannedMatches.splice(idx, 1);
+            syncToCloud();
+            renderPlannedMatches();
+            
+            alert("Spieldaten wurden zurück in das Setup geladen. Du kannst jetzt Änderungen vornehmen und neu planen.");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function startPlannedMatch(idx) {
+            const matchToStart = plannedMatches[idx];
+            plannedMatches.splice(idx, 1); 
+            syncToCloud();
+            renderPlannedMatches();
+            executeMatchStart(matchToStart);
         }
 
         function renderCurrentHole() {
@@ -502,22 +706,25 @@
             const m1Html = hole.p1MulliganHole ? `<span class="text-[10px] text-blue-400 font-bold uppercase py-1">Genutzt</span>` : (currentMatch.p1.mulliganUsed ? `<button disabled class="text-xs btn-mulligan-disabled px-2.5 py-1 rounded-lg font-medium">Mulligan</button>` : `<button onclick="triggerMulligan('p1')" class="text-xs btn-mulligan-active px-2.5 py-1 rounded-lg font-medium">Mulligan</button>`);
             const m2Html = hole.p2MulliganHole ? `<span class="text-[10px] text-blue-400 font-bold uppercase py-1">Genutzt</span>` : (currentMatch.p2.mulliganUsed ? `<button disabled class="text-xs btn-mulligan-disabled px-2.5 py-1 rounded-lg font-medium">Mulligan</button>` : `<button onclick="triggerMulligan('p2')" class="text-xs btn-mulligan-active px-2.5 py-1 rounded-lg font-medium">Mulligan</button>`);
 
+            const v1Html = hole.p1Vorgabe > 0 ? `<span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wide bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-800 ml-2">[-1]</span>` : '';
+            const v2Html = hole.p2Vorgabe > 0 ? `<span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wide bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-800 ml-2">[-1]</span>` : '';
+
             zone.innerHTML = `
                 <div class="flex justify-between items-center border-b border-zinc-900 pb-2"><span class="text-xl font-bold text-emerald-500">Bahn ${hole.number}</span><span class="text-xs bg-zinc-900 px-3 py-1 rounded-full text-gray-300 font-semibold tracking-wide">PAR ${hole.par}</span></div>
                 <div class="space-y-4 pt-2">
                     <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-900 space-y-2">
                         <div class="flex justify-between items-center">
-                            <div><span class="font-bold text-white block">Schmelle</span><span class="text-[10px] text-gray-400 italic">${currentMatch.p1.nick}</span></div>
+                            <div><span class="font-bold text-white block">Schmelle ${v1Html}</span><span class="text-[10px] text-gray-400 italic">${currentMatch.p1.nick}</span></div>
                             <div class="flex items-center gap-2"><div>${m1Html}</div><button onclick="toggleLady('p1')" class="text-xs ${l1Class} px-2.5 py-1 rounded-lg font-medium">Lady</button></div>
                         </div>
-                        <input type="number" id="strokes-p1" value="${hole.p1Strokes || ''}" oninput="updateStrokes('p1')" placeholder="Schläge" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-center text-lg font-bold text-white focus:border-emerald-600 focus:outline-none">
+                        <input type="number" id="strokes-p1" value="${hole.p1Strokes || ''}" oninput="updateStrokes('p1')" placeholder="Schläge (Brutto)" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-center text-lg font-bold text-white focus:border-emerald-600 focus:outline-none">
                     </div>
                     <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 space-y-2">
                         <div class="flex justify-between items-center">
-                            <div><span class="font-bold text-white block">König</span><span class="text-[10px] text-gray-400 italic">${currentMatch.p2.nick}</span></div>
+                            <div><span class="font-bold text-white block">König ${v2Html}</span><span class="text-[10px] text-gray-400 italic">${currentMatch.p2.nick}</span></div>
                             <div class="flex items-center gap-2"><div>${m2Html}</div><button onclick="toggleLady('p2')" class="text-xs ${l2Class} px-2.5 py-1 rounded-lg font-medium">Lady</button></div>
                         </div>
-                        <input type="number" id="strokes-p2" value="${hole.p2Strokes || ''}" oninput="updateStrokes('p2')" placeholder="Schläge" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-center text-lg font-bold text-white focus:border-emerald-600 focus:outline-none">
+                        <input type="number" id="strokes-p2" value="${hole.p2Strokes || ''}" oninput="updateStrokes('p2')" placeholder="Schläge (Brutto)" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-center text-lg font-bold text-white focus:border-emerald-600 focus:outline-none">
                     </div>
                 </div>
                 <div id="hole-result-preview" class="text-center text-xs text-gray-400 font-mono pt-1">Warte auf Schläge von beiden Spielern...</div>
@@ -529,8 +736,11 @@
             let p1Wins = 0; let p2Wins = 0;
             matchObj.holes.forEach(h => {
                 if(h.par !== null && h.p1Strokes !== null && h.p2Strokes !== null) {
-                    if(h.p1Strokes < h.p2Strokes) p1Wins++;
-                    else if(h.p2Strokes < h.p1Strokes) p2Wins++;
+                    let effS1 = h.p1Strokes - h.p1Vorgabe;
+                    let effS2 = h.p2Strokes - h.p2Vorgabe;
+                    
+                    if(effS1 < effS2) p1Wins++;
+                    else if(effS2 < effS1) p2Wins++;
                 }
             });
             return { p1Wins, p2Wins };
@@ -557,10 +767,12 @@
         }
 
         function triggerMulligan(player) {
-            currentMatch[player].mulliganUsed = true; 
-            currentMatch.holes[currentHoleIndex][player + 'MulliganHole'] = true;
-            autoSave();
-            renderCurrentHole();
+            if(confirm("Mulligan wirklich einsetzen? Dieser ist nur einmal pro Runde verfügbar.")) {
+                currentMatch[player].mulliganUsed = true; 
+                currentMatch.holes[currentHoleIndex][player + 'MulliganHole'] = true;
+                autoSave();
+                renderCurrentHole();
+            }
         }
 
         function toggleLady(player) {
@@ -600,13 +812,23 @@
         function updateHolePreview() {
             const hole = currentMatch.holes[currentHoleIndex]; const previewEl = document.getElementById('hole-result-preview'); if(!previewEl) return;
             const s1 = hole.p1Strokes; const s2 = hole.p2Strokes; if (s1 === null || s2 === null) { previewEl.innerText = "Warte auf Schläge..."; return; }
-            const diff1 = s1 - hole.par; const diff2 = s2 - hole.par;
+            
+            let effS1 = s1 - hole.p1Vorgabe;
+            let effS2 = s2 - hole.p2Vorgabe;
+            const diff1 = effS1 - hole.par; const diff2 = effS2 - hole.par;
+
             if (s1 === 1 && s2 === 1) previewEl.innerText = "Beide HIO! Punkt an höheren HCP-Spieler.";
             else if (s1 === 1) previewEl.innerText = "Hole-in-One! +10 Punkte für " + currentMatch.p1.nick; 
             else if (s2 === 1) previewEl.innerText = "Hole-in-One! +10 Punkte für " + currentMatch.p2.nick;
-            else if (s1 < s2) previewEl.innerText = (diff1 <= -1) ? "Birdie! +3 Punkte für " + currentMatch.p1.nick : "Lochgewinn! +2 Punkte für " + currentMatch.p1.nick;
-            else if (s2 < s1) previewEl.innerText = (diff2 <= -1) ? "Birdie! +3 Punkte für " + currentMatch.p2.nick : "Lochgewinn! +2 Punkte für " + currentMatch.p2.nick;
+            else if (effS1 < effS2) previewEl.innerText = (diff1 <= -1) ? "Birdie-Wertung! +3 Punkte für " + currentMatch.p1.nick : "Lochgewinn! +2 Punkte für " + currentMatch.p1.nick;
+            else if (effS2 < effS1) previewEl.innerText = (diff2 <= -1) ? "Birdie-Wertung! +3 Punkte für " + currentMatch.p2.nick : "Lochgewinn! +2 Punkte für " + currentMatch.p2.nick;
             else previewEl.innerText = "Gleichstand! +1 Punkt für höheren HCP-Spieler.";
+        }
+
+        function showLiveScorecard() {
+            document.getElementById('modal-title').innerText = "Live Scorekarte";
+            document.getElementById('modal-content').innerHTML = buildTableHTML(currentMatch, true);
+            document.getElementById('global-modal').classList.remove('hidden');
         }
 
         function hasMissingScores() {
@@ -617,45 +839,104 @@
             return false;
         }
 
-        function buildTableHTML(matchObj) {
+        function generateFinanceHtml(matchObj) {
+            let totalP1Points = 0; let totalP2Points = 0;
+            matchObj.holes.forEach((h) => {
+                if(h.par === null || h.p1Strokes === null || h.p2Strokes === null) return;
+                let effS1 = h.p1Strokes - h.p1Vorgabe; let effS2 = h.p2Strokes - h.p2Vorgabe;
+                let p1HolePoints = 0; let p2HolePoints = 0;
+                if (h.p1Strokes === 1 && h.p2Strokes === 1) { if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1; }
+                else if (h.p1Strokes === 1) p1HolePoints = 10; else if (h.p2Strokes === 1) p2HolePoints = 10;
+                else if (effS1 < effS2) p1HolePoints = (effS1 - h.par <= -1) ? 3 : 2; 
+                else if (effS2 < effS1) p2HolePoints = (effS2 - h.par <= -1) ? 3 : 2;
+                else if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else if (matchObj.p2.hcp > matchObj.p1.hcp) p2HolePoints = 1; else { p1HolePoints = 1; p2HolePoints = 1; }
+                totalP1Points += p1HolePoints; totalP2Points += p2HolePoints;
+            });
+
+            let p1BaseWin = totalP1Points - totalP2Points;
+            let p2BaseWin = totalP2Points - totalP1Points;
+            
+            let p1Cost = matchObj.p1.boughtVorgaben * 0.75;
+            let p2Cost = matchObj.p2.boughtVorgaben * 0.75;
+            
+            let p1Net = p1BaseWin - p1Cost;
+            let p2Net = p2BaseWin - p2Cost;
+
+            let html = `<div class="space-y-1.5 text-xs text-left w-full mt-3">`;
+            
+            if (p1BaseWin === 0) {
+                html += `<div class="font-bold text-gray-300">Reguläres Spiel: Unentschieden (0 Euro)</div>`;
+            } else if (p1BaseWin > 0) {
+                html += `<div class="font-bold text-gray-300">Reguläres Spiel: ${matchObj.p1.nick} gewinnt ${p1BaseWin} Euro</div>`;
+            } else {
+                html += `<div class="font-bold text-gray-300">Reguläres Spiel: ${matchObj.p2.nick} gewinnt ${p2BaseWin} Euro</div>`;
+            }
+
+            if (matchObj.p1.boughtVorgaben > 0) {
+                html += `<div class="text-gray-400">Abzug ${matchObj.p1.nick}: Minus ${matchObj.p1.boughtVorgaben}x Joker (-${p1Cost.toFixed(2)} Euro)</div>`;
+            }
+            if (matchObj.p2.boughtVorgaben > 0) {
+                html += `<div class="text-gray-400">Abzug ${matchObj.p2.nick}: Minus ${matchObj.p2.boughtVorgaben}x Joker (-${p2Cost.toFixed(2)} Euro)</div>`;
+            }
+
+            html += `<div class="pt-2 mt-1 border-t border-zinc-800 font-bold text-emerald-400 uppercase tracking-wide">`;
+            if (p1Net !== 0) html += `<div>Bilanz ${matchObj.p1.nick}: ${p1Net > 0 ? 'Gewinnt' : 'Zahlt'} ${Math.abs(p1Net).toFixed(2)} Euro</div>`;
+            if (p2Net !== 0) html += `<div>Bilanz ${matchObj.p2.nick}: ${p2Net > 0 ? 'Gewinnt' : 'Zahlt'} ${Math.abs(p2Net).toFixed(2)} Euro</div>`;
+            if (p1Net === 0 && p2Net === 0) html += `<div>Endstand komplett ausgeglichen (0 Euro)</div>`;
+            html += `</div></div>`;
+
+            return html;
+        }
+
+        function buildTableHTML(matchObj, isLive = false) {
             let totalPar = 0; let totalS1 = 0; let totalS2 = 0; let totalP1Points = 0; let totalP2Points = 0; let rowsHtml = "";
+            
             matchObj.holes.forEach((h) => {
                 if(h.par === null) return;
-                
-                totalPar += h.par; totalS1 += (h.p1Strokes || 0); totalS2 += (h.p2Strokes || 0);
+                let s1Str = h.p1Strokes || '-';
+                let s2Str = h.p2Strokes || '-';
                 let p1HolePoints = 0; let p2HolePoints = 0;
                 
                 if (h.p1Strokes !== null && h.p2Strokes !== null) {
+                    totalPar += h.par; totalS1 += h.p1Strokes; totalS2 += h.p2Strokes;
+                    let effS1 = h.p1Strokes - h.p1Vorgabe;
+                    let effS2 = h.p2Strokes - h.p2Vorgabe;
+
                     if (h.p1Strokes === 1 && h.p2Strokes === 1) {
                         if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1;
                     } else if (h.p1Strokes === 1) p1HolePoints = 10; else if (h.p2Strokes === 1) p2HolePoints = 10;
-                    else if (h.p1Strokes < h.p2Strokes) p1HolePoints = (h.p1Strokes - h.par <= -1) ? 3 : 2; 
-                    else if (h.p2Strokes < h.p1Strokes) p2HolePoints = (h.p2Strokes - h.par <= -1) ? 3 : 2;
+                    else if (effS1 < effS2) p1HolePoints = (effS1 - h.par <= -1) ? 3 : 2; 
+                    else if (effS2 < effS1) p2HolePoints = (effS2 - h.par <= -1) ? 3 : 2;
                     else if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else if (matchObj.p2.hcp > matchObj.p1.hcp) p2HolePoints = 1; else { p1HolePoints = 1; p2HolePoints = 1; }
+                    
+                    totalP1Points += p1HolePoints; totalP2Points += p2HolePoints;
+                    
+                    if(h.p1Strokes === 1) s1Str = `[HIO]`;
+                    else if((effS1 - h.par <= -1)) s1Str = `<span class="birdie-circle">${h.p1Strokes}</span>`;
+                    
+                    if(h.p2Strokes === 1) s2Str = `[HIO]`;
+                    else if((effS2 - h.par <= -1)) s2Str = `<span class="birdie-circle">${h.p2Strokes}</span>`;
                 }
-                totalP1Points += p1HolePoints; totalP2Points += p2HolePoints;
-                
-                let s1Str = h.p1Strokes || '-';
-                if(h.p1Strokes === 1) s1Str = `[HIO]`;
-                else if(h.p1Strokes && (h.p1Strokes - h.par <= -1)) s1Str = `<span class="birdie-circle">${h.p1Strokes}</span>`;
+
                 if(h.p1Lady) s1Str = `<span class="font-bold text-red-400">${h.p1Strokes || ''}(L)</span>`;
                 if(h.p1MulliganHole) s1Str += ` <span class="text-blue-400 font-bold text-[9px]">[M]</span>`;
+                if(h.p1Vorgabe > 0) s1Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
                 
-                let s2Str = h.p2Strokes || '-';
-                if(h.p2Strokes === 1) s2Str = `[HIO]`;
-                else if(h.p2Strokes && (h.p2Strokes - h.par <= -1)) s2Str = `<span class="birdie-circle">${h.p2Strokes}</span>`;
                 if(h.p2Lady) s2Str = `<span class="font-bold text-red-400">${h.p2Strokes || ''}(L)</span>`;
                 if(h.p2MulliganHole) s2Str += ` <span class="text-blue-400 font-bold text-[9px]">[M]</span>`;
+                if(h.p2Vorgabe > 0) s2Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
                 
-                rowsHtml += `<tr class="border-b border-zinc-900 text-center text-xs"><td class="p-2 font-bold text-gray-500">${h.number}</td><td class="p-2 bg-zinc-950 text-gray-300">${h.par}</td><td class="p-2 bg-schmelle-col">${s1Str}</td><td class="p-2 bg-schmelle-col text-emerald-500 font-bold">${p1HolePoints}</td><td class="p-2 bg-koenig-col">${s2Str}</td><td class="p-2 bg-koenig-col text-emerald-500 font-bold">${p2HolePoints}</td></tr>`;
+                let p1HoleDisplay = h.p1Strokes !== null ? p1HolePoints : '-';
+                let p2HoleDisplay = h.p2Strokes !== null ? p2HolePoints : '-';
+                
+                rowsHtml += `<tr class="border-b border-zinc-900 text-center text-xs"><td class="p-2 font-bold text-gray-500">${h.number}</td><td class="p-2 bg-zinc-950 text-gray-300">${h.par}</td><td class="p-2 bg-schmelle-col">${s1Str}</td><td class="p-2 bg-schmelle-col text-emerald-500 font-bold">${p1HoleDisplay}</td><td class="p-2 bg-koenig-col">${s2Str}</td><td class="p-2 bg-koenig-col text-emerald-500 font-bold">${p2HoleDisplay}</td></tr>`;
             });
             
-            let finalP1 = totalP1Points - matchObj.p1.roundLadys; let finalP2 = totalP2Points - matchObj.p2.roundLadys;
-            let cashString = finalP1 === finalP2 ? "Unentschieden (0 Euro)" : (finalP1 > finalP2 ? matchObj.p1.nick + " gewinnt " + (finalP1 - finalP2) + " Euro" : matchObj.p2.nick + " gewinnt " + (finalP2 - finalP1) + " Euro");
-
             let gmHtml = `<div class="text-sm text-gray-400 mb-6 text-center">Gamemaster: ${matchObj.gm}</div>`;
+            let liveHtml = isLive ? `<div class="text-xs text-blue-400 mb-2 text-center uppercase tracking-widest font-bold">Zwischenstand</div>` : '';
+            let financeBlock = generateFinanceHtml(matchObj);
 
-            return gmHtml + `<table class="w-full text-left border-collapse mt-2"><thead><tr class="border-b-2 border-zinc-800 text-xs text-center font-bold"><th class="p-2" colspan="2">Endergebnis:</th><th class="p-2 bg-schmelle-col text-white" colspan="2">${matchObj.p1.nick} (${finalP1} Pkt)</th><th class="p-2 bg-koenig-col text-white" colspan="2">${matchObj.p2.nick} (${finalP2} Pkt)</th></tr><tr class="border-b border-zinc-800 text-center text-[10px] uppercase text-gray-400"><th class="p-2">Bahn</th><th class="p-2 bg-zinc-950">Par</th><th class="p-2 bg-schmelle-col text-gray-300">Sch.</th><th class="p-2 bg-schmelle-col text-emerald-500">Pkt.</th><th class="p-2 bg-koenig-col text-gray-300">Sch.</th><th class="p-2 bg-koenig-col text-emerald-500">Pkt.</th></tr></thead><tbody>${rowsHtml}<tr class="bg-zinc-950 text-center text-xs border-t border-zinc-900"><td class="p-2 text-gray-500">Summe</td><td class="p-2 bg-zinc-950 text-gray-300 font-bold">${totalPar}</td><td class="p-2 bg-schmelle-col text-gray-400">${totalS1}</td><td class="p-2 bg-schmelle-col text-emerald-600">${totalP1Points}</td><td class="p-2 bg-koenig-col text-gray-400">${totalS2}</td><td class="p-2 bg-koenig-col text-emerald-600">${totalP2Points}</td></tr><tr class="bg-zinc-900 text-center text-xs font-bold border-t-2 border-zinc-800"><td class="p-2 text-gray-400" colspan="2">Endstand</td><td class="p-2 bg-schmelle-col text-white">${totalS1}</td><td class="p-2 bg-schmelle-col text-emerald-400 text-sm">${finalP1}</td><td class="p-2 bg-koenig-col text-white">${totalS2}</td><td class="p-2 bg-koenig-col text-emerald-400 text-sm">${finalP2}</td></tr><tr class="bg-zinc-950 text-center text-xs font-bold border-t-2 border-zinc-700"><td class="p-2.5 text-emerald-400 tracking-widest text-sm font-mono" colspan="2">$$$</td><td class="p-2.5 text-emerald-400 font-sans text-center text-xs uppercase tracking-wide" colspan="4">${cashString}</td></tr></tbody></table><div class="mt-4 pt-3 border-t border-zinc-900 text-[10px] text-gray-400 space-y-0.5 font-mono"><div>Legende:</div><div><span class="border border-emerald-500 px-1 rounded-full text-[9px]">X</span> = Birdie</div><div><span class="font-bold text-white">[HIO]</span> = Hole-in-One</div><div><span class="font-bold text-red-400">(L)</span> = Lady am Abschlag (Punktabzug)</div><div><span class="text-blue-400 font-bold">[M]</span> = Mulligan genutzt</div></div>`;
+            return gmHtml + liveHtml + `<table class="w-full text-left border-collapse mt-2"><thead><tr class="border-b-2 border-zinc-800 text-xs text-center font-bold"><th class="p-2" colspan="2">Endergebnis:</th><th class="p-2 bg-schmelle-col text-white" colspan="2">${matchObj.p1.nick} (${totalP1Points} Pkt)</th><th class="p-2 bg-koenig-col text-white" colspan="2">${matchObj.p2.nick} (${totalP2Points} Pkt)</th></tr><tr class="border-b border-zinc-800 text-center text-[10px] uppercase text-gray-400"><th class="p-2">Bahn</th><th class="p-2 bg-zinc-950">Par</th><th class="p-2 bg-schmelle-col text-gray-300">Sch.</th><th class="p-2 bg-schmelle-col text-emerald-500">Pkt.</th><th class="p-2 bg-koenig-col text-gray-300">Sch.</th><th class="p-2 bg-koenig-col text-emerald-500">Pkt.</th></tr></thead><tbody>${rowsHtml}<tr class="bg-zinc-950 text-center text-xs border-t border-zinc-900"><td class="p-2 text-gray-500">Summe</td><td class="p-2 bg-zinc-950 text-gray-300 font-bold">${totalPar}</td><td class="p-2 bg-schmelle-col text-gray-400">${totalS1}</td><td class="p-2 bg-schmelle-col text-emerald-600">${totalP1Points}</td><td class="p-2 bg-koenig-col text-gray-400">${totalS2}</td><td class="p-2 bg-koenig-col text-emerald-600">${totalP2Points}</td></tr><tr class="bg-zinc-900 text-center text-xs font-bold border-t-2 border-zinc-800"><td class="p-2 text-gray-400" colspan="2">Endstand</td><td class="p-2 bg-schmelle-col text-white">${totalS1}</td><td class="p-2 bg-schmelle-col text-emerald-400 text-sm">${totalP1Points}</td><td class="p-2 bg-koenig-col text-white">${totalS2}</td><td class="p-2 bg-koenig-col text-emerald-400 text-sm">${totalP2Points}</td></tr><tr class="bg-zinc-950 border-t-2 border-zinc-700"><td class="p-3 text-emerald-400 tracking-widest text-sm font-mono align-top text-center" colspan="2">$$$</td><td class="p-3" colspan="4">${financeBlock}</td></tr></tbody></table><div class="mt-4 pt-3 border-t border-zinc-900 text-[10px] text-gray-400 space-y-0.5 font-mono"><div>Legende:</div><div><span class="border border-emerald-500 px-1 rounded-full text-[9px]">X</span> = Birdie-Wertung</div><div><span class="font-bold text-white">[HIO]</span> = Hole-in-One</div><div><span class="font-bold text-red-400">(L)</span> = Lady am Abschlag (Kein Minuspunkt im Match)</div><div><span class="text-blue-400 font-bold">[M]</span> = Mulligan genutzt</div><div><span class="text-emerald-400 font-bold">[-X]</span> = Gekaufter Joker (Minusschlag)</div></div>`;
         }
 
         function renderTotalSummary() {
@@ -664,7 +945,7 @@
             const zone = document.getElementById('active-hole-zone');
             document.getElementById('btn-prev').disabled = false; document.getElementById('btn-prev').style.opacity = "1";
             document.getElementById('dynamic-nav-container').innerHTML = `<div class="space-y-3 w-full"><button onclick="shareSpecificMatch()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-sm transition shadow uppercase tracking-wider">Ergebnis teilen</button><button onclick="finishMatch()" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-sm transition shadow hover:bg-gray-200 uppercase tracking-wider">Speichern und Schließen</button></div>`;
-            document.getElementById('dormie-banner').classList.add('hidden'); zone.innerHTML = buildTableHTML(currentMatch);
+            document.getElementById('dormie-banner').classList.add('hidden'); zone.innerHTML = buildTableHTML(currentMatch, false);
         }
 
         function calculateScores() {
@@ -674,9 +955,12 @@
                 let p1HolePoints = 0; let p2HolePoints = 0;
                 const s1 = hole.p1Strokes; const s2 = hole.p2Strokes;
                 if (s1 !== null && s2 !== null) {
+                    let effS1 = s1 - hole.p1Vorgabe;
+                    let effS2 = s2 - hole.p2Vorgabe;
+
                     if (s1 === 1 && s2 === 1) { if (currentMatch.p1.hcp > currentMatch.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1; }
                     else if (s1 === 1) p1HolePoints = 10; else if (s2 === 1) p2HolePoints = 10;
-                    else if (s1 < s2) p1HolePoints = (s1 - hole.par <= -1) ? 3 : 2; else if (s2 < s1) p2HolePoints = (s2 - hole.par <= -1) ? 3 : 2;
+                    else if (effS1 < effS2) p1HolePoints = (effS1 - hole.par <= -1) ? 3 : 2; else if (effS2 < effS1) p2HolePoints = (effS2 - hole.par <= -1) ? 3 : 2;
                     else if (currentMatch.p1.hcp > currentMatch.p2.hcp) p1HolePoints = 1; else if (currentMatch.p2.hcp > currentMatch.p1.hcp) p2HolePoints = 1; else { p1HolePoints = 1; p2HolePoints = 1; }
                 }
                 p1TotalPoints += p1HolePoints; p2TotalPoints += p2HolePoints;
@@ -685,8 +969,9 @@
             currentMatch.holes.forEach(h => { if(h.p1Lady) p1Ladys++; if(h.p2Lady) p2Ladys++; });
             currentMatch.p1.roundLadys = p1Ladys; currentMatch.p2.roundLadys = p2Ladys;
             
-            document.getElementById('hero-p1-points').innerText = p1TotalPoints - p1Ladys; 
-            document.getElementById('hero-p2-points').innerText = p2TotalPoints - p2Ladys;
+            // WICHTIG: Keine Minus-Punkte mehr für Ladys im Score
+            document.getElementById('hero-p1-points').innerText = p1TotalPoints; 
+            document.getElementById('hero-p2-points').innerText = p2TotalPoints;
         }
 
         function generateShareText(matchObj) {
@@ -695,17 +980,47 @@
                 if(h.par === null) return;
                 let p1HolePoints = 0; let p2HolePoints = 0;
                 if (h.p1Strokes !== null && h.p2Strokes !== null) {
+                    let effS1 = h.p1Strokes - h.p1Vorgabe;
+                    let effS2 = h.p2Strokes - h.p2Vorgabe;
+
                     if (h.p1Strokes === 1 && h.p2Strokes === 1) { if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1; }
                     else if (h.p1Strokes === 1) p1HolePoints = 10; else if (h.p2Strokes === 1) p2HolePoints = 10;
-                    else if (h.p1Strokes < h.p2Strokes) p1HolePoints = (h.p1Strokes - h.par <= -1) ? 3 : 2; 
-                    else if (h.p2Strokes < h.p1Strokes) p2HolePoints = (h.p2Strokes - h.par <= -1) ? 3 : 2;
+                    else if (effS1 < effS2) p1HolePoints = (effS1 - h.par <= -1) ? 3 : 2; 
+                    else if (effS2 < effS1) p2HolePoints = (effS2 - h.par <= -1) ? 3 : 2;
                     else if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else if (matchObj.p2.hcp > matchObj.p1.hcp) p2HolePoints = 1; else { p1HolePoints = 1; p2HolePoints = 1; }
                 }
                 totalP1Points += p1HolePoints; totalP2Points += p2HolePoints;
             });
-            let finalP1 = totalP1Points - matchObj.p1.roundLadys; let finalP2 = totalP2Points - matchObj.p2.roundLadys;
             
-            return "TFGC ERGEBNIS\nSpieltag: " + matchObj.date + "\nPlatz: " + matchObj.course.toUpperCase() + "\nMatchplay: " + calculateClassicMatchplayString(matchObj) + "\n\nGamemaster: " + matchObj.gm + "\n\nPUNKTE-ENDSTAND:\n- " + matchObj.p1.nick + ": " + finalP1 + " Spielpunkte (+" + matchObj.p1.roundLadys + " Ladys)\n- " + matchObj.p2.nick + ": " + finalP2 + " Spielpunkte (+" + matchObj.p2.roundLadys + " Ladys)\n\nABRECHNUNG:\n" + (finalP1 === finalP2 ? "Unentschieden (0 Euro)" : (finalP1 > finalP2 ? matchObj.p1.nick + " gewinnt " + (finalP1 - finalP2) + " Euro" : matchObj.p2.nick + " gewinnt " + (finalP2 - finalP1) + " Euro"));
+            let p1BaseWin = totalP1Points - totalP2Points;
+            let p2BaseWin = totalP2Points - totalP1Points;
+            let p1Cost = matchObj.p1.boughtVorgaben * 0.75;
+            let p2Cost = matchObj.p2.boughtVorgaben * 0.75;
+            let p1Net = p1BaseWin - p1Cost;
+            let p2Net = p2BaseWin - p2Cost;
+
+            let moneyResult = "";
+            if (p1BaseWin === 0) {
+                moneyResult += "Reguläres Spiel: Unentschieden (0 Euro)\n";
+            } else if (p1BaseWin > 0) {
+                moneyResult += "Reguläres Spiel: " + matchObj.p1.nick + " gewinnt " + p1BaseWin + " Euro\n";
+            } else {
+                moneyResult += "Reguläres Spiel: " + matchObj.p2.nick + " gewinnt " + p2BaseWin + " Euro\n";
+            }
+
+            if (matchObj.p1.boughtVorgaben > 0) {
+                moneyResult += "Abzug " + matchObj.p1.nick + ": Minus " + matchObj.p1.boughtVorgaben + "x Joker (-" + p1Cost.toFixed(2) + " Euro)\n";
+            }
+            if (matchObj.p2.boughtVorgaben > 0) {
+                moneyResult += "Abzug " + matchObj.p2.nick + ": Minus " + matchObj.p2.boughtVorgaben + "x Joker (-" + p2Cost.toFixed(2) + " Euro)\n";
+            }
+
+            moneyResult += "\n--- BILANZ ---\n";
+            if (p1Net !== 0) moneyResult += matchObj.p1.nick + ": " + (p1Net > 0 ? "Gewinnt " : "Zahlt ") + Math.abs(p1Net).toFixed(2) + " Euro\n";
+            if (p2Net !== 0) moneyResult += matchObj.p2.nick + ": " + (p2Net > 0 ? "Gewinnt " : "Zahlt ") + Math.abs(p2Net).toFixed(2) + " Euro\n";
+            if (p1Net === 0 && p2Net === 0) moneyResult += "Endstand komplett ausgeglichen (0 Euro)\n";
+
+            return "TFGC ERGEBNIS\nSpieltag: " + matchObj.date + "\nPlatz: " + matchObj.course.toUpperCase() + "\nMatchplay: " + calculateClassicMatchplayString(matchObj) + "\n\nGamemaster: " + matchObj.gm + "\n\nPUNKTE-ENDSTAND:\n- " + matchObj.p1.nick + ": " + totalP1Points + " Spielpunkte (" + matchObj.p1.roundLadys + " Bierschulden-Ladys)\n- " + matchObj.p2.nick + ": " + totalP2Points + " Spielpunkte (" + matchObj.p2.roundLadys + " Bierschulden-Ladys)\n\nFINANZEN:\n" + moneyResult;
         }
 
         function shareSpecificMatch(index = null) {
@@ -762,11 +1077,13 @@
                 let p1Points = 0; let p2Points = 0;
                 m.holes.forEach(h => {
                     if (h.par !== null && h.p1Strokes !== null && h.p2Strokes !== null) {
-                        if (h.p1Strokes < h.p2Strokes) p1Points += 2; else if (h.p2Strokes < h.p1Strokes) p2Points += 2;
+                        let effS1 = h.p1Strokes - h.p1Vorgabe;
+                        let effS2 = h.p2Strokes - h.p2Vorgabe;
+                        if (effS1 < effS2) p1Points += 2; else if (effS2 < effS1) p2Points += 2;
                     }
                 });
-                if((p1Points - m.p1.roundLadys) > (p2Points - m.p2.roundLadys)) schmelleTotalWins++;
-                else if((p2Points - m.p2.roundLadys) > (p1Points - m.p1.roundLadys)) koenigTotalWins++;
+                if(p1Points > p2Points) schmelleTotalWins++;
+                else if(p2Points > p1Points) koenigTotalWins++;
             });
             document.getElementById('all-time-stats').innerText = `Wins: S ${schmelleTotalWins} | K ${koenigTotalWins} (Total: ${totalMatches})`;
 
@@ -774,7 +1091,7 @@
             [...archive].reverse().forEach((match, idx) => {
                 const actualIndex = archive.length - 1 - idx; const item = document.createElement('div');
                 item.className = "bg-zinc-950 hover:bg-zinc-900 p-2 rounded border border-zinc-900 flex justify-between items-center cursor-pointer transition no-select";
-                item.innerHTML = `<span class="font-mono text-emerald-500 font-bold">${match.date}</span><span class="text-gray-400 uppercase tracking-wider text-[10px]">${match.course}</span><span class="font-medium text-gray-200">${calculateClassicMatchplayString(match)}</span>`;
+                item.innerHTML = `<span class="font-mono text-emerald-500 font-bold text-[10px]">${match.date.split(',')[0]}</span><span class="text-gray-400 uppercase tracking-wider text-[10px]">${match.course}</span><span class="font-medium text-gray-200">${calculateClassicMatchplayString(match)}</span>`;
                 let pressTimer; let isLongPress = false;
                 const startPress = () => { isLongPress = false; pressTimer = setTimeout(() => { isLongPress = true; deleteHistoryItem(actualIndex); }, 1000); };
                 const endPress = () => { clearTimeout(pressTimer); if (!isLongPress) openHistoryModal(actualIndex); };
@@ -802,7 +1119,7 @@
             const match = archive[originalIdx]; if(!match) return;
             document.getElementById('modal-title').innerText = "Match vom " + match.date + " (" + match.course.toUpperCase() + ")";
             
-            let contentHtml = buildTableHTML(match);
+            let contentHtml = buildTableHTML(match, false);
             contentHtml += `<div class="mt-4 space-y-2">
                 <button onclick="shareSpecificMatch(${originalIdx})" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-sm transition shadow uppercase tracking-wider">Ergebnis per WhatsApp teilen</button>
                 <button onclick="deleteHistoryItem(${originalIdx}, true)" class="w-full bg-red-900/40 hover:bg-red-800 text-red-400 font-bold py-2.5 rounded-xl text-xs transition shadow uppercase tracking-wider border border-red-900">Spiel aus Archiv löschen</button>
@@ -817,12 +1134,6 @@
             if(wins.p1Wins > wins.p2Wins) return matchObj.p1.nick + " " + (wins.p1Wins - wins.p2Wins) + " auf";
             if(wins.p2Wins > wins.p1Wins) return matchObj.p2.nick + " " + (wins.p2Wins - wins.p1Wins) + " auf";
             return "All Square";
-        }
-
-        function openRulesModal() {
-            document.getElementById('modal-title').innerText = "Regeln und App-Anleitung";
-            document.getElementById('modal-content').innerHTML = `<div class="space-y-4 text-xs text-gray-300 font-sans leading-relaxed"><div><h4 class="font-bold text-emerald-400 uppercase mb-1">1. Matchplay Punkte (Interne Wertung)</h4><p class="mb-1">Es wird Brutto-Lochspiel gespielt:</p><ul class="list-disc pl-4 space-y-1"><li><strong>Lochgewinn:</strong> Spieler mit weniger Schlägen erhält <span class="text-white font-bold">2 Punkte</span>.</li><li><strong>Birdie:</strong> Lochgewinn mit Birdie bringt <span class="text-white font-bold">3 Punkte</span> (überschreibt den normalen Lochgewinn).</li><li><strong>Hole-in-One:</strong> Bringt sofort epische <span class="text-white font-bold">10 Punkte</span>.</li><li><strong>Gleichstand (Unentschieden):</strong> Der Spieler mit dem <span class="text-white font-bold">höheren HCP</span> erhält <span class="text-emerald-400 font-bold">1 Punkt</span>. Bei exakt gleichem Handicap erhalten beide 1 Punkt.</li></ul></div><div class="border-t border-zinc-800 pt-2"><h4 class="font-bold text-gray-200 uppercase mb-1">2. Matchplay-Ergebnisse verstehen</h4><p class="mb-1">In eurer Spielhistorie wird der Endstand im klassischen Matchplay-Format dargestellt:</p><ul class="list-disc pl-4 space-y-1"><li><strong>All Square:</strong> Ihr habt über die gesamte Runde exakt gleich viele Bahnen gewonnen (Unentschieden).</li><li><strong>Spieler 1 3 auf:</strong> Spieler 1 hat im Laufe der Runde insgesamt 3 Bahnen mehr gewonnen als Spieler 2.</li></ul></div><div class="border-t border-zinc-800 pt-2"><h4 class="font-bold text-red-400 uppercase mb-1">3. Die Lady und Bierscore</h4><p>Wer seinen Abschlag nicht über die Damenabschläge bringt, schlägt eine Lady. Das Aktivieren des roten Lady-Buttons führt am Rundenende zu <span class="text-red-400 font-bold">-1 Punkt</span> in der Spielwertung und addiert automatisch <span class="text-red-400 font-bold">+1 offenes Bier</span> auf das globale Lady-Konto.</p></div><div class="border-t border-zinc-800 pt-2"><h4 class="font-bold text-blue-400 uppercase mb-1">4. Das Mulligan-System</h4><p>Jeder Spieler hat genau <span class="text-blue-400 font-bold">1 Mulligan frei</span> pro Runde. Sobald du den blauen Button drückst, wird er für dich gesperrt und die Nutzung für die Endabrechnung vermerkt.</p></div><div class="border-t border-zinc-800 pt-2"><h4 class="font-bold text-emerald-400 uppercase mb-1">5. Die Abrechnung</h4><p>Nach der Abrechnung aller Bahnen inklusive Lady-Abzügen ermittelt die App den finalen Endstand. Die Punktedifferenz wird direkt unter der Tabelle ausgewiesen.</p></div></div>`;
-            document.getElementById('global-modal').classList.remove('hidden');
         }
 
         function closeModal() { document.getElementById('global-modal').classList.add('hidden'); }
