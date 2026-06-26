@@ -390,8 +390,9 @@
         async function syncToCloud() {
             const stamp = document.getElementById('beer-timestamp');
             if (!cloudLoaded) {
-                if (stamp) stamp.innerText = "NICHT gespeichert (kein sicherer Cloud-Stand)";
-                alert("Sicherheitshinweis: Die Verbindung zur Cloud war beim App-Start nicht erfolgreich.\n\nZum Schutz eurer gespeicherten Spiele wird JETZT NICHT gespeichert, damit nichts überschrieben wird.\n\nBitte sorge für Internet und lade die App neu, dann erneut speichern.");
+                // Schutz im Hintergrund: ohne sicher geladenen Stand wird nicht gespeichert
+                // (damit nichts überschrieben wird) – aber ohne störendes Popup.
+                if (stamp) stamp.innerText = "Warte auf Cloud-Verbindung…";
                 return;
             }
             try {
@@ -415,8 +416,7 @@
                 });
                 if (stamp) stamp.innerText = "Stand: " + lastBeerUpdate + " (Cloud, gesichert)";
             } catch (e) {
-                if (stamp) stamp.innerText = "Fehler beim Speichern – NICHT gesichert!";
-                alert("Speichern fehlgeschlagen (vermutlich keine Verbindung).\n\nDeine Eingaben sind lokal noch vorhanden. Bitte bei Internet erneut speichern (z.B. über die Datenverwaltung).");
+                if (stamp) stamp.innerText = "Noch nicht gespeichert – bei Verbindung erneut versuchen";
             }
         }
 
@@ -458,7 +458,7 @@
                 // Nur wenn wir noch NIE erfolgreich geladen haben, sperren wir das Speichern.
                 // (Ein reiner Anzeige-Fehler nach erfolgreichem Laden darf das Speichern nicht blockieren.)
                 if (!cloudLoaded) {
-                    document.getElementById('beer-timestamp').innerText = "Offline – Speichern gesperrt (Daten geschützt)";
+                    document.getElementById('beer-timestamp').innerText = "Keine Cloud-Verbindung – bitte neu laden";
                 }
             });
         }
@@ -1328,18 +1328,26 @@
 
         function closeModal() { document.getElementById('global-modal').classList.add('hidden'); }
 
-        // Starte die App: erst anonym anmelden, dann die Daten aus der Cloud laden.
-        // (Die anonyme Anmeldung erlaubt es, die Datenbank-Regeln auf "nur Angemeldete" zu stellen.)
-        firebase.auth().onAuthStateChanged(function (user) {
-            if (user) {
-                if (!authInitDone) { authInitDone = true; fetchFromCloud(); }
-            } else {
-                firebase.auth().signInAnonymously().catch(function (err) {
-                    const stamp = document.getElementById('beer-timestamp');
-                    if (stamp) stamp.innerText = "Anmeldung fehlgeschlagen – offline";
-                });
-            }
-        });
+        // Startet die App und lädt die Daten aus der Cloud. Läuft garantiert genau einmal.
+        function startApp() {
+            if (authInitDone) return;
+            authInitDone = true;
+            fetchFromCloud();
+        }
+
+        // Wir versuchen eine anonyme Anmeldung (Voraussetzung für spätere strengere
+        // Datenbank-Regeln), blockieren das Laden der Daten aber NICHT, falls sie noch
+        // nicht möglich ist (z.B. in Firebase noch nicht aktiviert). So lädt die App immer.
+        try {
+            firebase.auth().onAuthStateChanged(function (user) {
+                if (user) startApp();
+            });
+            firebase.auth().signInAnonymously().catch(function () {
+                startApp(); // Anmeldung (noch) nicht möglich -> trotzdem laden
+            });
+        } catch (e) {
+            startApp(); // Auth-Modul nicht verfügbar -> trotzdem laden
+        }
         checkResume();
     </script>
 </body>
