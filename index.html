@@ -164,6 +164,7 @@
                 <option value="nord">Nord (9 Loch - Par 32)</option>
                 <option value="sued">Süd (9 Loch - Par 34)</option>
                 <option value="west">West (Aktuell nur 6 Bahnen spielbar)</option>
+                <option value="kurz">Kurzplatz (6 Loch - Par 18)</option>
             </select>
             <button id="btn-random-course" onclick="randomizeCourse()" class="w-full bg-zinc-900 hover:bg-zinc-800 text-xs text-gray-300 font-semibold py-2 rounded-lg transition uppercase tracking-wider border border-zinc-800">
                 Platz auslosen
@@ -336,7 +337,7 @@
             <div class="mt-4 pt-4 border-t border-zinc-900 space-y-2">
                 <h4 class="text-[11px] font-bold text-emerald-600 uppercase">Änderungshistorie</h4>
                 <ul class="text-[10px] text-gray-400 space-y-1 list-disc pl-4">
-                    <li><span class="text-gray-200 font-bold">v1.7:</span> Datensicherheit: kein Überschreiben ohne sicher geladenen Cloud-Stand, automatische Backups (Tages-Backup + letzter Stand). Historie "Saison X: Spielhistorie JJJJ" mit allen Spielen und Saison-Auswahl ("Wertung:", Season 0 = 2026). Spieltag-Planer mit Datum + Uhrzeit in 10-Minuten-Schritten. Anonyme Anmeldung (ermöglicht sichere Datenbank-Regeln). PayPal.Me: der Spieler mit negativer Endbilanz (inkl. eigener Joker-Kosten) zahlt diese per Link an den anderen. Zeitzonen-Fix beim Bearbeiten geplanter Spiele. Punkte erst nach vollständig gespielter Bahn (kein automatisches Unentschieden/NaN mehr); Schlag-Summen laufend pro Spieler. Geteiltes Ergebnis enthält die Gesamtschläge. Scores während der Runde korrigierbar (Bahn in der Live-Scorekarte antippen); Korrekturen werden dezent als Logbuch festgehalten. Joker-Kosten 0,50 EUR. Archiv: kein versehentliches Öffnen beim Scrollen. Head-to-Head-Statistik "1vs1" aufklappbar unter dem Archiv, folgt der "Wertung:"-Auswahl. Neuer "Platz auslosen"-Button; "Auslosen" statt "Zufällig auswählen"; Mulligan-Hinweis erweitert. Joker werden nicht mehr beim Setup/Planen festgelegt, sondern in einem kurzen Schritt beim Spielstart (beide Spieler wählen gemeinsam).</li>
+                    <li><span class="text-gray-200 font-bold">v1.7:</span> Datensicherheit: kein Überschreiben ohne sicher geladenen Cloud-Stand, automatische Backups (Tages-Backup + letzter Stand). Historie "Saison X: Spielhistorie JJJJ" mit allen Spielen und Saison-Auswahl ("Wertung:", Season 0 = 2026). Spieltag-Planer mit Datum + Uhrzeit in 10-Minuten-Schritten. Anonyme Anmeldung (ermöglicht sichere Datenbank-Regeln). PayPal.Me: der Spieler mit negativer Endbilanz (inkl. eigener Joker-Kosten) zahlt diese per Link an den anderen. Zeitzonen-Fix beim Bearbeiten geplanter Spiele. Punkte erst nach vollständig gespielter Bahn (kein automatisches Unentschieden/NaN mehr); Schlag-Summen laufend pro Spieler. Geteiltes Ergebnis enthält die Gesamtschläge. Scores während der Runde korrigierbar (Bahn in der Live-Scorekarte antippen); Korrekturen werden dezent als Logbuch festgehalten. Joker-Kosten 0,50 EUR. Archiv: kein versehentliches Öffnen beim Scrollen. Head-to-Head-Statistik "1vs1" aufklappbar unter dem Archiv, folgt der "Wertung:"-Auswahl. Neuer "Platz auslosen"-Button; "Auslosen" statt "Zufällig auswählen"; Mulligan-Hinweis erweitert. Joker werden nicht mehr beim Setup/Planen festgelegt, sondern in einem kurzen Schritt beim Spielstart (beide Spieler wählen gemeinsam). Kurzplatz (6 Loch, Par 18) als Übungsmodus wählbar (nicht im "Platz auslosen"): voll spielbar inkl. Ergebnis-Anzeige, wird aber nicht gespeichert und zählt nicht in die Statistik. West-Bahnen 4-6 vorbereitet (freischaltbar sobald spielbar).</li>
                     <li><span class="text-gray-200 font-bold">v1.6:</span> Abwärtskompatibilität für historische Spiele repariert (NaN-Fix bei fehlenden Jokern) und Listen-Konvertierung abgesichert.</li>
                     <li><span class="text-gray-200 font-bold">v1.5:</span> Lady-Punkteabzug entfernt, Joker-Finanzen verrechnet, Joker-Verteilung überarbeitet (max -1 pro Bahn).</li>
                 </ul>
@@ -360,7 +361,8 @@
         const courses = {
             nord: [4,3,3,4,4,4,3,4,3],
             sued: [4,3,5,4,3,5,3,4,3],
-            west: [4,4,4,null,null,null,4,3,4] 
+            west: [4,4,4,null,null,null,4,3,4], // Bahnen 4/5/6 noch gesperrt; sobald spielbar: 5,3,4 einsetzen -> [4,4,4,5,3,4,4,3,4]
+            kurz: [3,3,3,3,3,3] // Kurzplatz, 6 Bahnen, Par 18 (nicht im "Platz auslosen")
         };
 
         // --- GLOBALE VARIABLEN ---
@@ -1244,7 +1246,14 @@
             if(missingHoleNum) { alert("Achtung: Es wurden noch nicht alle Löcher ausgefüllt! Bitte prüft Bahn " + missingHoleNum + "."); currentHoleIndex = missingHoleNum - 1; renderCurrentHole(); return; }
             const zone = document.getElementById('active-hole-zone');
             document.getElementById('btn-prev').disabled = false; document.getElementById('btn-prev').style.opacity = "1";
-            document.getElementById('dynamic-nav-container').innerHTML = `<div class="space-y-3 w-full"><button onclick="shareSpecificMatch()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-sm transition shadow uppercase tracking-wider">Ergebnis teilen</button><button onclick="finishMatch()" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-sm transition shadow hover:bg-gray-200 uppercase tracking-wider">Speichern und Schließen</button></div>`;
+
+            const isKurz = currentMatch.course === 'kurz';
+            const closeBtn = isKurz
+                ? `<button onclick="finishCasualMatch()" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-sm transition shadow hover:bg-gray-200 uppercase tracking-wider">Schließen (nicht gespeichert)</button>`
+                : `<button onclick="finishMatch()" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-sm transition shadow hover:bg-gray-200 uppercase tracking-wider">Speichern und Schließen</button>`;
+            const kurzHint = isKurz ? `<div class="text-[10px] text-gray-500 text-center italic">Kurzplatz: Übungsrunde – wird nicht gespeichert und zählt nicht in die Statistik.</div>` : '';
+
+            document.getElementById('dynamic-nav-container').innerHTML = `<div class="space-y-3 w-full">${kurzHint}<button onclick="shareSpecificMatch()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-sm transition shadow uppercase tracking-wider">Ergebnis teilen</button>${closeBtn}</div>`;
             document.getElementById('dormie-banner').classList.add('hidden'); zone.innerHTML = buildTableHTML(currentMatch, false);
         }
 
@@ -1353,10 +1362,21 @@
             localStorage.removeItem('fgc_current_hole');
             currentMatch = null; 
             
-            syncToCloud(); 
-            document.getElementById('screen-game').classList.add('hidden'); 
+            syncToCloud();
+            document.getElementById('screen-game').classList.add('hidden');
             document.getElementById('screen-start').classList.remove('hidden');
             renderHistoryList();
+            checkResume();
+        }
+
+        // Kurzplatz-Übungsrunde beenden: NICHTS speichern/tracken (kein Archiv, kein Bierscore, keine Cloud)
+        function finishCasualMatch() {
+            if (!confirm("Kurzplatz-Runde beenden? Das Ergebnis wird nicht gespeichert und zählt nicht in die Statistik.")) return;
+            localStorage.removeItem('fgc_current_match');
+            localStorage.removeItem('fgc_current_hole');
+            currentMatch = null;
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-start').classList.remove('hidden');
             checkResume();
         }
 
@@ -1430,7 +1450,7 @@
             populateSeasonSelect();
 
             // Siege nach klassischem Lochspiel (wer mehr Löcher gewonnen hat) – für die gewählte "Wertung:"
-            const inSeason = (m) => selectedSeason === 'all' ? true : getMatchYear(m) === parseInt(selectedSeason);
+            const inSeason = (m) => m.course !== 'kurz' && (selectedSeason === 'all' ? true : getMatchYear(m) === parseInt(selectedSeason));
             let schmelleWins = 0; let koenigWins = 0; let counted = 0;
             archive.forEach(m => {
                 if (!inSeason(m)) return;
@@ -1451,6 +1471,7 @@
             listEl.innerHTML = "";
             for (let i = archive.length - 1; i >= 0; i--) {
                 const match = archive[i];
+                if (match.course === 'kurz') continue; // Kurzplatz-Übungsrunden nicht anzeigen
                 const actualIndex = i;
                 const item = document.createElement('div');
                 item.className = "bg-zinc-950 hover:bg-zinc-900 p-2 rounded border border-zinc-900 flex justify-between items-center cursor-pointer transition no-select";
@@ -1515,7 +1536,7 @@
             const el = document.getElementById('dashboard-content');
             if (!el) return;
 
-            const games = archive.filter(m => m && m.holes && (selectedSeason === 'all' ? true : getMatchYear(m) === parseInt(selectedSeason)));
+            const games = archive.filter(m => m && m.holes && m.course !== 'kurz' && (selectedSeason === 'all' ? true : getMatchYear(m) === parseInt(selectedSeason)));
             const label = selectedSeason === 'all' ? "Gesamt (seit jeher)" : seasonLabel(parseInt(selectedSeason));
 
             if (games.length === 0) {
