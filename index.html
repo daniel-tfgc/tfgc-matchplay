@@ -122,7 +122,7 @@
                 </label>
             </div>
             <button id="btn-random-gm" onclick="randomizeGM()" class="w-full bg-zinc-900 hover:bg-zinc-800 text-xs text-gray-300 font-semibold py-2 rounded-lg transition uppercase tracking-wider border border-zinc-800 mt-1">
-                Zufällig auswählen
+                Auslosen
             </button>
         </div>
 
@@ -140,13 +140,13 @@
                     <option value="2">Zwei Joker für -2 Schläge auf Zufallsbahnen (1,00 EUR)</option>
                     <option value="3">Drei Joker für -3 Schläge auf Zufallsbahnen (1,50 EUR)</option>
                 </select>
-                <input type="text" id="p1-paypal" placeholder="PayPal.Me-Name (optional)" class="w-full mt-2 bg-black border border-zinc-800 rounded p-2 text-[11px] text-white focus:outline-none focus:border-emerald-600">
+                <input type="text" id="p1-paypal" value="danielzemelka1337" placeholder="PayPal.Me-Name (optional)" class="w-full mt-2 bg-black border border-zinc-800 rounded p-2 text-[11px] text-white focus:outline-none focus:border-emerald-600">
             </div>
             <div class="border-t border-zinc-800 pt-3">
                 <label class="block text-xs uppercase text-gray-400 mb-1 font-bold">Spieler 2: König</label>
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <input type="text" id="p2-nick" placeholder="Spielname" value="König" class="bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600">
-                    <input type="number" step="0.1" max="54" id="p2-hcp" value="51.8" class="bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600" placeholder="HCP">
+                    <input type="number" step="0.1" max="54" id="p2-hcp" value="50.9" class="bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600" placeholder="HCP">
                 </div>
                 <select id="p2-vorgabe" class="w-full bg-zinc-900 border border-zinc-800 rounded p-2 text-[11px] text-emerald-400 focus:outline-none font-medium">
                     <option value="0">Kein Joker (0,00 EUR)</option>
@@ -165,6 +165,9 @@
                 <option value="sued">Süd (9 Loch - Par 34)</option>
                 <option value="west">West (Aktuell nur 6 Bahnen spielbar)</option>
             </select>
+            <button id="btn-random-course" onclick="randomizeCourse()" class="w-full bg-zinc-900 hover:bg-zinc-800 text-xs text-gray-300 font-semibold py-2 rounded-lg transition uppercase tracking-wider border border-zinc-800">
+                Platz auslosen
+            </button>
         </div>
 
         <div class="space-y-3">
@@ -222,7 +225,7 @@
 
         <div class="golf-bg p-4 rounded-xl border border-zinc-800 mt-4 space-y-3">
             <button onclick="toggleDashboard()" class="w-full flex justify-between items-center">
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-600">Direktvergleich</h2>
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-600">1vs1</h2>
                 <span id="dashboard-caret" class="text-[10px] text-emerald-600 font-mono uppercase tracking-wider">▼ Anzeigen</span>
             </button>
             <div id="dashboard-content" class="hidden text-xs"></div>
@@ -289,6 +292,37 @@
         </div>
     </div>
 
+    <div id="joker-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="golf-bg border border-zinc-800 w-full max-w-sm rounded-xl p-4 space-y-4">
+            <div class="border-b border-zinc-900 pb-2">
+                <h3 class="text-sm font-bold text-emerald-500 uppercase">Joker festlegen</h3>
+                <p class="text-[11px] text-gray-400 mt-1">Jeder wählt jetzt seine Joker. Sie werden beim Start zufällig und unsichtbar auf verschiedene Bahnen verteilt.</p>
+            </div>
+            <div>
+                <label id="joker-p1-label" class="block text-xs uppercase text-gray-400 mb-1 font-bold">Spieler 1</label>
+                <select id="joker-p1" class="w-full bg-zinc-900 border border-zinc-800 rounded p-2 text-[11px] text-emerald-400 focus:outline-none font-medium">
+                    <option value="0">Kein Joker (0,00 EUR)</option>
+                    <option value="1">Ein Joker für -1 Schlag auf Zufallsbahn (0,50 EUR)</option>
+                    <option value="2">Zwei Joker für -2 Schläge auf Zufallsbahnen (1,00 EUR)</option>
+                    <option value="3">Drei Joker für -3 Schläge auf Zufallsbahnen (1,50 EUR)</option>
+                </select>
+            </div>
+            <div>
+                <label id="joker-p2-label" class="block text-xs uppercase text-gray-400 mb-1 font-bold">Spieler 2</label>
+                <select id="joker-p2" class="w-full bg-zinc-900 border border-zinc-800 rounded p-2 text-[11px] text-emerald-400 focus:outline-none font-medium">
+                    <option value="0">Kein Joker (0,00 EUR)</option>
+                    <option value="1">Ein Joker für -1 Schlag auf Zufallsbahn (0,50 EUR)</option>
+                    <option value="2">Zwei Joker für -2 Schläge auf Zufallsbahnen (1,00 EUR)</option>
+                    <option value="3">Drei Joker für -3 Schläge auf Zufallsbahnen (1,50 EUR)</option>
+                </select>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="cancelJokerStep()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-300 font-bold py-2.5 rounded-lg text-sm transition">Abbrechen</button>
+                <button onclick="confirmJokerStep()" class="flex-1 tfgc-bg-green hover:opacity-90 text-white font-bold py-2.5 rounded-lg text-sm transition uppercase tracking-wider">Los geht's</button>
+            </div>
+        </div>
+    </div>
+
     <div id="admin-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="golf-bg border border-zinc-800 w-full max-w-sm rounded-xl p-4 space-y-4">
             <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
@@ -302,7 +336,7 @@
             <div class="mt-4 pt-4 border-t border-zinc-900 space-y-2">
                 <h4 class="text-[11px] font-bold text-emerald-600 uppercase">Änderungshistorie</h4>
                 <ul class="text-[10px] text-gray-400 space-y-1 list-disc pl-4">
-                    <li><span class="text-gray-200 font-bold">v1.7:</span> Datensicherheit: kein Überschreiben ohne sicher geladenen Cloud-Stand, automatische Backups (Tages-Backup + letzter Stand). Historie "Saison X: Spielhistorie JJJJ" mit allen Spielen und Saison-Auswahl ("Wertung:", Season 0 = 2026). Spieltag-Planer mit Datum + Uhrzeit in 10-Minuten-Schritten. Anonyme Anmeldung (ermöglicht sichere Datenbank-Regeln). PayPal.Me: der Spieler mit negativer Endbilanz (inkl. eigener Joker-Kosten) zahlt diese per Link an den anderen. Zeitzonen-Fix beim Bearbeiten geplanter Spiele. Punkte erst nach vollständig gespielter Bahn (kein automatisches Unentschieden/NaN mehr); Schlag-Summen laufend pro Spieler. Geteiltes Ergebnis enthält die Gesamtschläge. Scores während der Runde korrigierbar (Bahn in der Live-Scorekarte antippen); Korrekturen werden dezent als Logbuch festgehalten. Joker-Kosten 0,50 EUR. Archiv: kein versehentliches Öffnen beim Scrollen. Neuer "Direktvergleich" (Head-to-Head-Statistik) aufklappbar unter dem Archiv, folgt der "Wertung:"-Auswahl.</li>
+                    <li><span class="text-gray-200 font-bold">v1.7:</span> Datensicherheit: kein Überschreiben ohne sicher geladenen Cloud-Stand, automatische Backups (Tages-Backup + letzter Stand). Historie "Saison X: Spielhistorie JJJJ" mit allen Spielen und Saison-Auswahl ("Wertung:", Season 0 = 2026). Spieltag-Planer mit Datum + Uhrzeit in 10-Minuten-Schritten. Anonyme Anmeldung (ermöglicht sichere Datenbank-Regeln). PayPal.Me: der Spieler mit negativer Endbilanz (inkl. eigener Joker-Kosten) zahlt diese per Link an den anderen. Zeitzonen-Fix beim Bearbeiten geplanter Spiele. Punkte erst nach vollständig gespielter Bahn (kein automatisches Unentschieden/NaN mehr); Schlag-Summen laufend pro Spieler. Geteiltes Ergebnis enthält die Gesamtschläge. Scores während der Runde korrigierbar (Bahn in der Live-Scorekarte antippen); Korrekturen werden dezent als Logbuch festgehalten. Joker-Kosten 0,50 EUR. Archiv: kein versehentliches Öffnen beim Scrollen. Head-to-Head-Statistik "1vs1" aufklappbar unter dem Archiv, folgt der "Wertung:"-Auswahl. Neuer "Platz auslosen"-Button; "Auslosen" statt "Zufällig auswählen"; Mulligan-Hinweis erweitert. Joker werden nicht mehr beim Setup/Planen festgelegt, sondern in einem kurzen Schritt beim Spielstart (beide Spieler wählen gemeinsam).</li>
                     <li><span class="text-gray-200 font-bold">v1.6:</span> Abwärtskompatibilität für historische Spiele repariert (NaN-Fix bei fehlenden Jokern) und Listen-Konvertierung abgesichert.</li>
                     <li><span class="text-gray-200 font-bold">v1.5:</span> Lady-Punkteabzug entfernt, Joker-Finanzen verrechnet, Joker-Verteilung überarbeitet (max -1 pro Bahn).</li>
                 </ul>
@@ -513,12 +547,40 @@
                 btn.classList.add('text-emerald-400', 'bg-black', 'border-emerald-600');
                 
                 setTimeout(() => {
-                    btn.innerText = "Zufällig auswählen";
+                    btn.innerText = "Auslosen";
                     btn.disabled = false;
                     btn.classList.add('text-gray-300', 'bg-zinc-900', 'border-zinc-800');
                     btn.classList.remove('text-emerald-400', 'bg-black', 'border-emerald-600');
                 }, 2000);
             }, 600);
+        }
+
+        // --- PLATZ AUSLOSEN ---
+        function randomizeCourse() {
+            const select = document.getElementById('course-select');
+            const btn = document.getElementById('btn-random-course');
+            const courseKeys = ['nord', 'sued', 'west'];
+
+            btn.innerText = "Wird ausgelost...";
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            setTimeout(() => {
+                const pick = courseKeys[Math.floor(Math.random() * courseKeys.length)];
+                select.value = pick;
+                const label = select.options[select.selectedIndex].text.split(' ')[0];
+
+                btn.innerText = "Ausgelost: " + label + "!";
+                btn.classList.remove('text-gray-300', 'bg-zinc-900', 'border-zinc-800', 'opacity-50');
+                btn.classList.add('text-emerald-400', 'bg-black', 'border-emerald-600');
+
+                setTimeout(() => {
+                    btn.innerText = "Platz auslosen";
+                    btn.disabled = false;
+                    btn.classList.add('text-gray-300', 'bg-zinc-900', 'border-zinc-800');
+                    btn.classList.remove('text-emerald-400', 'bg-black', 'border-emerald-600');
+                }, 2000);
+            }, 500);
         }
 
         // --- AUTO-SAVE LOGIK ---
@@ -634,12 +696,8 @@
                 number: index + 1, par: par, p1Strokes: null, p2Strokes: null, p1Lady: false, p2Lady: false, p1MulliganHole: false, p2MulliganHole: false, p1Vorgabe: 0, p2Vorgabe: 0
             }));
 
-            if (p1VorgabeCount > 0) {
-                generateRandomVorgaben(holesData, p1VorgabeCount).forEach(idx => holesData[idx].p1Vorgabe = 1);
-            }
-            if (p2VorgabeCount > 0) {
-                generateRandomVorgaben(holesData, p2VorgabeCount).forEach(idx => holesData[idx].p2Vorgabe = 1);
-            }
+            // Joker werden NICHT mehr hier verteilt, sondern erst beim Spielstart (Joker-Schritt).
+            // p1VorgabeCount/p2VorgabeCount dienen nur als Vorauswahl für den Start-Dialog.
 
             const honorEl = document.getElementById('honor-result');
             const honorStr = (honorEl && !honorEl.classList.contains('hidden') && honorEl.dataset.honor) ? honorEl.dataset.honor : "Nicht ausgelost";
@@ -662,26 +720,61 @@
             const matchObj = buildMatchObject();
 
             if (isPlanning) {
+                // Beim Planen bleiben die Joker offen – sie werden erst beim Start gewählt.
+                matchObj.p1.boughtVorgaben = 0;
+                matchObj.p2.boughtVorgaben = 0;
                 plannedMatches.push(matchObj);
                 syncToCloud();
-                
+
                 const dObj = new Date(matchObj.rawDate);
                 const dateOnly = dObj.toLocaleDateString('de-DE');
                 const timeOnly = dObj.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'});
-                
+
                 let shareText = "TFGC MATCH GEPLANT\n\nDatum: " + dateOnly + "\nTee Time: " + timeOnly + " Uhr\nPlatz: " + matchObj.course.toUpperCase() + "\nAnlage: Golf & More Huckingen\n\nGame Master: " + matchObj.gm + "\nEhre am 1. Abschlag: " + matchObj.honor + "\nDanach Ready-Golf!";
-                
-                if (matchObj.p1.boughtVorgaben > 0 || matchObj.p2.boughtVorgaben > 0) {
-                    shareText += "\n\nGekaufte Joker-Löcher:\n- " + matchObj.p1.nick + ": " + matchObj.p1.boughtVorgaben + " Joker\n- " + matchObj.p2.nick + ": " + matchObj.p2.boughtVorgaben + " Joker";
-                }
+                shareText += "\n\nJoker werden beim Start gemeinsam festgelegt.";
                 shareText += "\n\nMatch ist online gespeichert und am Spieltag startbar.";
-                
+
                 window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText));
                 renderPlannedMatches();
                 alert("Spiel wurde erfolgreich geplant und in der Cloud gespeichert.");
             } else {
-                executeMatchStart(matchObj);
+                startWithJokerStep(matchObj);
             }
+        }
+
+        // --- JOKER-SCHRITT BEIM SPIELSTART ---
+        let pendingMatch = null;
+
+        function startWithJokerStep(matchObj) {
+            pendingMatch = matchObj;
+            document.getElementById('joker-p1-label').innerText = matchObj.p1.nick + " (" + matchObj.p1.name + ")";
+            document.getElementById('joker-p2-label').innerText = matchObj.p2.nick + " (" + matchObj.p2.name + ")";
+            document.getElementById('joker-p1').value = matchObj.p1.boughtVorgaben || 0;
+            document.getElementById('joker-p2').value = matchObj.p2.boughtVorgaben || 0;
+            document.getElementById('joker-modal').classList.remove('hidden');
+        }
+
+        function cancelJokerStep() {
+            document.getElementById('joker-modal').classList.add('hidden');
+            pendingMatch = null;
+        }
+
+        function confirmJokerStep() {
+            if (!pendingMatch) return;
+            const c1 = parseInt(document.getElementById('joker-p1').value) || 0;
+            const c2 = parseInt(document.getElementById('joker-p2').value) || 0;
+
+            // Joker jetzt zufällig auf verschiedene Bahnen verteilen (Vorauswahl zurücksetzen)
+            pendingMatch.holes.forEach(h => { h.p1Vorgabe = 0; h.p2Vorgabe = 0; });
+            if (c1 > 0) generateRandomVorgaben(pendingMatch.holes, c1).forEach(idx => pendingMatch.holes[idx].p1Vorgabe = 1);
+            if (c2 > 0) generateRandomVorgaben(pendingMatch.holes, c2).forEach(idx => pendingMatch.holes[idx].p2Vorgabe = 1);
+            pendingMatch.p1.boughtVorgaben = c1;
+            pendingMatch.p2.boughtVorgaben = c2;
+
+            document.getElementById('joker-modal').classList.add('hidden');
+            const m = pendingMatch;
+            pendingMatch = null;
+            executeMatchStart(m);
         }
 
         function executeMatchStart(matchObj) {
@@ -769,10 +862,10 @@
 
         function startPlannedMatch(idx) {
             const matchToStart = plannedMatches[idx];
-            plannedMatches.splice(idx, 1); 
+            plannedMatches.splice(idx, 1);
             syncToCloud();
             renderPlannedMatches();
-            executeMatchStart(matchToStart);
+            startWithJokerStep(matchToStart);
         }
 
         function renderCurrentHole() {
@@ -861,7 +954,7 @@
         }
 
         function triggerMulligan(player) {
-            if(confirm("Mulligan wirklich einsetzen? Dieser ist nur einmal pro Runde verfügbar.")) {
+            if(confirm("Bestätige, dass du deinen Mulligan jetzt nimmst und komm erstmal runter... Dieser ist nur einmal pro Runde verfügbar.")) {
                 currentMatch[player].mulliganUsed = true; 
                 currentMatch.holes[currentHoleIndex][player + 'MulliganHole'] = true;
                 autoSave();
