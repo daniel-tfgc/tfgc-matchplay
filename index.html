@@ -240,6 +240,10 @@
                 </svg>
             </button>
         </div>
+
+        <div class="text-center mb-4">
+            <button onclick="openChangelog()" class="text-[10px] text-zinc-600 hover:text-emerald-500 transition font-mono">TFGC · v1.8 · Änderungen ansehen</button>
+        </div>
     </div>
 
     <div id="screen-game" class="hidden space-y-4 w-full flex-grow flex flex-col justify-between">
@@ -324,6 +328,33 @@
         </div>
     </div>
 
+    <div id="stechen-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="golf-bg border border-zinc-800 w-full max-w-sm rounded-xl p-4 space-y-4">
+            <div class="border-b border-zinc-900 pb-2">
+                <h3 class="text-sm font-bold text-emerald-500 uppercase">Stechen</h3>
+                <p class="text-[11px] text-gray-400 mt-1">Das Match ist unentschieden. Entscheidet es per Stechen und tragt den Sieger ein.</p>
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-gray-400 mb-1 font-bold">Art des Stechens</label>
+                <select id="stechen-type" class="w-full bg-zinc-900 border border-zinc-800 rounded p-2 text-[11px] text-emerald-400 focus:outline-none font-medium">
+                    <option value="putt">Ausputten</option>
+                    <option value="chip">Auschippen</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs uppercase text-gray-400 mb-1 font-bold">Sieger</label>
+                <select id="stechen-winner" class="w-full bg-zinc-900 border border-zinc-800 rounded p-2 text-[11px] text-emerald-400 focus:outline-none font-medium">
+                    <option value="p1">Spieler 1</option>
+                    <option value="p2">Spieler 2</option>
+                </select>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeStechen()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-300 font-bold py-2.5 rounded-lg text-sm transition">Abbrechen</button>
+                <button onclick="confirmStechen()" class="flex-1 tfgc-bg-green hover:opacity-90 text-white font-bold py-2.5 rounded-lg text-sm transition uppercase tracking-wider">Sieger speichern</button>
+            </div>
+        </div>
+    </div>
+
     <div id="admin-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="golf-bg border border-zinc-800 w-full max-w-sm rounded-xl p-4 space-y-4">
             <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
@@ -337,14 +368,14 @@
             <div class="mt-4 pt-4 border-t border-zinc-900 space-y-2">
                 <h4 class="text-[11px] font-bold text-emerald-600 uppercase">Änderungshistorie</h4>
                 <ul class="text-[10px] text-gray-400 space-y-1 list-disc pl-4">
-                    <li><span class="text-gray-200 font-bold">v1.7:</span> Datensicherheit: kein Überschreiben ohne sicher geladenen Cloud-Stand, automatische Backups (Tages-Backup + letzter Stand). Historie "Saison X: Spielhistorie JJJJ" mit allen Spielen und Saison-Auswahl ("Wertung:", Season 0 = 2026). Spieltag-Planer mit Datum + Uhrzeit in 10-Minuten-Schritten. Anonyme Anmeldung (ermöglicht sichere Datenbank-Regeln). PayPal.Me: der Spieler mit negativer Endbilanz (inkl. eigener Joker-Kosten) zahlt diese per Link an den anderen. Zeitzonen-Fix beim Bearbeiten geplanter Spiele. Punkte erst nach vollständig gespielter Bahn (kein automatisches Unentschieden/NaN mehr); Schlag-Summen laufend pro Spieler. Geteiltes Ergebnis enthält die Gesamtschläge. Scores während der Runde korrigierbar (Bahn in der Live-Scorekarte antippen); Korrekturen werden dezent als Logbuch festgehalten. Joker-Kosten 0,50 EUR. Archiv: kein versehentliches Öffnen beim Scrollen. Head-to-Head-Statistik "1vs1" aufklappbar unter dem Archiv, folgt der "Wertung:"-Auswahl. Neuer "Platz auslosen"-Button; "Auslosen" statt "Zufällig auswählen"; Mulligan-Hinweis erweitert. Joker werden nicht mehr beim Setup/Planen festgelegt, sondern in einem kurzen Schritt beim Spielstart (beide Spieler wählen gemeinsam). Kurzplatz (6 Loch, Par 18) als Übungsmodus wählbar (nicht im "Platz auslosen"): voll spielbar inkl. Ergebnis-Anzeige, wird aber nicht gespeichert und zählt nicht in die Statistik. West-Bahnen 4-6 vorbereitet (freischaltbar sobald spielbar). Joker werden nur noch auf Par 4 und Par 5 verteilt (nicht auf Par 3). Legende zeigt jetzt zuerst die Punkte (Lochgewinn 2, Gleichstand 1, Birdie 3, HIO 10), dann die Zeichen.</li>
+                    <li><span class="text-gray-200 font-bold">v1.8:</span> Datensicherheit: kein Überschreiben ohne sicher geladenen Cloud-Stand, automatische Backups (Tages-Backup + letzter Stand). Historie "Saison X: Spielhistorie JJJJ" mit allen Spielen und Saison-Auswahl ("Wertung:", Season 0 = 2026). Spieltag-Planer mit Datum + Uhrzeit in 10-Minuten-Schritten. Anonyme Anmeldung (ermöglicht sichere Datenbank-Regeln). PayPal.Me: der Spieler mit negativer Endbilanz (inkl. eigener Joker-Kosten) zahlt diese per Link an den anderen. Zeitzonen-Fix beim Bearbeiten geplanter Spiele. Punkte erst nach vollständig gespielter Bahn (kein automatisches Unentschieden/NaN mehr); Schlag-Summen laufend pro Spieler. Geteiltes Ergebnis enthält die Gesamtschläge. Scores während der Runde korrigierbar (Bahn in der Live-Scorekarte antippen); Korrekturen werden dezent als Logbuch festgehalten. Joker-Kosten 0,50 EUR. Archiv: kein versehentliches Öffnen beim Scrollen. Head-to-Head-Statistik "1vs1" aufklappbar unter dem Archiv, folgt der "Wertung:"-Auswahl. Neuer "Platz auslosen"-Button; "Auslosen" statt "Zufällig auswählen"; Mulligan-Hinweis erweitert. Joker werden nicht mehr beim Setup/Planen festgelegt, sondern in einem kurzen Schritt beim Spielstart (beide Spieler wählen gemeinsam). Kurzplatz (6 Loch, Par 18) als Übungsmodus wählbar (nicht im "Platz auslosen"): voll spielbar inkl. Ergebnis-Anzeige, wird aber nicht gespeichert und zählt nicht in die Statistik. West-Bahnen 4-6 vorbereitet (freischaltbar sobald spielbar). Joker werden nur noch auf Par 4 und Par 5 verteilt (nicht auf Par 3). Legende zeigt jetzt zuerst die Punkte (Lochgewinn 2, Gleichstand 1, Birdie 3, HIO 10), dann die Zeichen. PayPal-Link: runde Beträge ohne Nachkommastellen (z.B. "3EUR" statt "3.00EUR"), damit PayPal den Betrag korrekt vorbelegt. Neu: "Ball verloren" pro Bahn – der Spieler verliert das Loch (0 Punkte, Gegner gewinnt), trägt seine tatsächlichen Schläge aber weiter ein (zählen für die Gesamt-Schlagzahl); Markierung in der Scorekarte. Neu: Stechen bei Unentschieden (Löcher ODER Punkte gleich) – Button im Ergebnis, Wahl zwischen Ausputten/Auschippen + Sieger; Ergebnis z.B. "Remis · König (Ausputten)" in Historie/Teilen und zählt als Sieg in der 1vs1-Statistik.</li>
                     <li><span class="text-gray-200 font-bold">v1.6:</span> Abwärtskompatibilität für historische Spiele repariert (NaN-Fix bei fehlenden Jokern) und Listen-Konvertierung abgesichert.</li>
                     <li><span class="text-gray-200 font-bold">v1.5:</span> Lady-Punkteabzug entfernt, Joker-Finanzen verrechnet, Joker-Verteilung überarbeitet (max -1 pro Bahn).</li>
                 </ul>
             </div>
             
             <div class="text-center text-[10px] text-gray-600 font-mono mt-4 pt-2 border-t border-zinc-900">
-                Version 1.7 | Stand: Juni 2026
+                Version 1.8 | Stand: Juni 2026
             </div>
         </div>
     </div>
@@ -696,7 +727,7 @@
             const pars = courses[courseKey];
             
             let holesData = pars.map((par, index) => ({
-                number: index + 1, par: par, p1Strokes: null, p2Strokes: null, p1Lady: false, p2Lady: false, p1MulliganHole: false, p2MulliganHole: false, p1Vorgabe: 0, p2Vorgabe: 0
+                number: index + 1, par: par, p1Strokes: null, p2Strokes: null, p1Lady: false, p2Lady: false, p1MulliganHole: false, p2MulliganHole: false, p1Vorgabe: 0, p2Vorgabe: 0, p1Lost: false, p2Lost: false
             }));
 
             // Joker werden NICHT mehr hier verteilt, sondern erst beim Spielstart (Joker-Schritt).
@@ -715,7 +746,8 @@
                 p1: { name: "Schmelle", nick: p1Nick, hcp: p1Hcp, points: 0, roundLadys: 0, mulliganUsed: false, boughtVorgaben: p1VorgabeCount, paypal: (document.getElementById('p1-paypal').value || "").trim() },
                 p2: { name: "König", nick: p2Nick, hcp: p2Hcp, points: 0, roundLadys: 0, mulliganUsed: false, boughtVorgaben: p2VorgabeCount, paypal: (document.getElementById('p2-paypal').value || "").trim() },
                 holes: holesData,
-                editLog: []
+                editLog: [],
+                tiebreak: null
             };
         }
 
@@ -907,14 +939,16 @@
                             <div><span class="font-bold text-white block">Schmelle ${v1Html}</span><span class="text-[10px] text-gray-400 italic">${currentMatch.p1.nick}</span></div>
                             <div class="flex items-center gap-2"><div>${m1Html}</div><button onclick="toggleLady('p1')" class="text-xs ${l1Class} px-2.5 py-1 rounded-lg font-medium">Lady</button></div>
                         </div>
-                        <input type="number" id="strokes-p1" value="${hole.p1Strokes || ''}" oninput="updateStrokes('p1')" placeholder="Schläge (Brutto)" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-center text-lg font-bold text-white focus:border-emerald-600 focus:outline-none">
+                        <input type="number" id="strokes-p1" value="${hole.p1Strokes || ''}" oninput="updateStrokes('p1')" placeholder="${hole.p1Lost ? 'Schläge (für Zählung eintragen)' : 'Schläge (Brutto)'}" class="w-full bg-zinc-900 border ${hole.p1Lost ? 'border-red-800' : 'border-zinc-800'} rounded-lg p-2.5 text-center text-lg font-bold text-white focus:border-emerald-600 focus:outline-none">
+                        <button onclick="toggleLostBall('p1')" class="w-full mt-2 text-[11px] px-2 py-1.5 rounded-lg font-medium ${hole.p1Lost ? 'btn-lady-active' : 'bg-zinc-900 text-gray-400 border border-zinc-800 hover:bg-zinc-800'}">${hole.p1Lost ? 'Ball verloren ✓ (Loch an ' + currentMatch.p2.nick + ')' : 'Ball verloren'}</button>
                     </div>
                     <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 space-y-2">
                         <div class="flex justify-between items-center">
                             <div><span class="font-bold text-white block">König ${v2Html}</span><span class="text-[10px] text-gray-400 italic">${currentMatch.p2.nick}</span></div>
                             <div class="flex items-center gap-2"><div>${m2Html}</div><button onclick="toggleLady('p2')" class="text-xs ${l2Class} px-2.5 py-1 rounded-lg font-medium">Lady</button></div>
                         </div>
-                        <input type="number" id="strokes-p2" value="${hole.p2Strokes || ''}" oninput="updateStrokes('p2')" placeholder="Schläge (Brutto)" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-center text-lg font-bold text-white focus:border-emerald-600 focus:outline-none">
+                        <input type="number" id="strokes-p2" value="${hole.p2Strokes || ''}" oninput="updateStrokes('p2')" placeholder="${hole.p2Lost ? 'Schläge (für Zählung eintragen)' : 'Schläge (Brutto)'}" class="w-full bg-zinc-900 border ${hole.p2Lost ? 'border-red-800' : 'border-zinc-800'} rounded-lg p-2.5 text-center text-lg font-bold text-white focus:border-emerald-600 focus:outline-none">
+                        <button onclick="toggleLostBall('p2')" class="w-full mt-2 text-[11px] px-2 py-1.5 rounded-lg font-medium ${hole.p2Lost ? 'btn-lady-active' : 'bg-zinc-900 text-gray-400 border border-zinc-800 hover:bg-zinc-800'}">${hole.p2Lost ? 'Ball verloren ✓ (Loch an ' + currentMatch.p1.nick + ')' : 'Ball verloren'}</button>
                     </div>
                 </div>
                 <div id="hole-result-preview" class="text-center text-xs text-gray-400 font-mono pt-1">Warte auf Schläge von beiden Spielern...</div>
@@ -925,13 +959,9 @@
         function calculateHoleWins(matchObj) {
             let p1Wins = 0; let p2Wins = 0;
             matchObj.holes.forEach(h => {
-                if(h.par !== null && isPlayed(h.p1Strokes) && isPlayed(h.p2Strokes)) {
-                    let effS1 = h.p1Strokes - (h.p1Vorgabe || 0);
-                    let effS2 = h.p2Strokes - (h.p2Vorgabe || 0);
-
-                    if(effS1 < effS2) p1Wins++;
-                    else if(effS2 < effS1) p2Wins++;
-                }
+                const w = holeWinner(h);
+                if (w === 1) p1Wins++;
+                else if (w === 2) p2Wins++;
             });
             return { p1Wins, p2Wins };
         }
@@ -967,9 +997,21 @@
 
         function toggleLady(player) {
             currentMatch.holes[currentHoleIndex][player + 'Lady'] = !currentMatch.holes[currentHoleIndex][player + 'Lady'];
-            calculateScores(); 
+            calculateScores();
             autoSave();
             renderCurrentHole();
+        }
+
+        // "Ball verloren": Der Spieler verliert das Loch (0 Punkte, Gegner gewinnt) – seine eingetragenen
+        // Schläge zählen aber weiterhin für die Gesamt-Schlagzahl. Reine Umschaltung, Score bleibt erhalten.
+        function toggleLostBall(player) {
+            const h = currentMatch.holes[currentHoleIndex];
+            h[player + 'Lost'] = !h[player + 'Lost'];
+            calculateScores();
+            updateHolePreview();
+            autoSave();
+            renderCurrentHole();
+            checkDormieStatus();
         }
 
         function updateStrokes(player) {
@@ -1018,8 +1060,15 @@
 
         function updateHolePreview() {
             const hole = currentMatch.holes[currentHoleIndex]; const previewEl = document.getElementById('hole-result-preview'); if(!previewEl) return;
-            const s1 = hole.p1Strokes; const s2 = hole.p2Strokes; if (!isPlayed(s1) || !isPlayed(s2)) { previewEl.innerText = "Warte auf Schläge..."; return; }
-            
+            const s1 = hole.p1Strokes; const s2 = hole.p2Strokes;
+
+            // "Ball verloren"-Fälle zuerst
+            if (hole.p1Lost && hole.p2Lost) { previewEl.innerText = "Beide Ball verloren – kein Loch-Gewinner."; return; }
+            if (hole.p1Lost) { previewEl.innerText = isPlayed(s2) ? (currentMatch.p2.nick + " gewinnt das Loch (Ball verloren bei " + currentMatch.p1.nick + ").") : ("Ball verloren bei " + currentMatch.p1.nick + " – warte auf Score von " + currentMatch.p2.nick + "..."); return; }
+            if (hole.p2Lost) { previewEl.innerText = isPlayed(s1) ? (currentMatch.p1.nick + " gewinnt das Loch (Ball verloren bei " + currentMatch.p2.nick + ").") : ("Ball verloren bei " + currentMatch.p2.nick + " – warte auf Score von " + currentMatch.p1.nick + "..."); return; }
+
+            if (!isPlayed(s1) || !isPlayed(s2)) { previewEl.innerText = "Warte auf Schläge..."; return; }
+
             let effS1 = s1 - (hole.p1Vorgabe || 0);
             let effS2 = s2 - (hole.p2Vorgabe || 0);
             const diff1 = effS1 - hole.par; const diff2 = effS2 - hole.par;
@@ -1041,7 +1090,11 @@
         function hasMissingScores() {
             if (!currentMatch) return false;
             for (let i = 0; i < currentMatch.holes.length; i++) {
-                if (currentMatch.holes[i].par !== null && (!isPlayed(currentMatch.holes[i].p1Strokes) || !isPlayed(currentMatch.holes[i].p2Strokes))) return currentMatch.holes[i].number;
+                const h = currentMatch.holes[i];
+                if (h.par === null) continue;
+                const p1Done = isPlayed(h.p1Strokes) || h.p1Lost;
+                const p2Done = isPlayed(h.p2Strokes) || h.p2Lost;
+                if (!p1Done || !p2Done) return h.number;
             }
             return false;
         }
@@ -1058,6 +1111,9 @@
             return u;
         }
 
+        // PayPal.Me erwartet runde Beträge OHNE Nachkommastellen (z.B. "3EUR"), sonst mit (z.B. "2.50EUR").
+        function payAmountForUrl(x) { return Number.isInteger(x) ? String(x) : x.toFixed(2); }
+
         // Bestimmt aus den Endbilanzen, wer wie viel an wen zahlt.
         // Regel: Wer eine negative Endbilanz (inkl. eigener Joker-Kosten) hat, zahlt diese an den anderen.
         function computePayment(net1, net2, pl1, pl2) {
@@ -1070,6 +1126,48 @@
             } else if (net1 < 0) { payer = pl1; receiver = pl2; amount = Math.abs(net1); }
             else if (net2 < 0) { payer = pl2; receiver = pl1; amount = Math.abs(net2); }
             return { payer: payer, receiver: receiver, amount: amount };
+        }
+
+        // --- ZENTRALE PUNKTE-LOGIK PRO LOCH (inkl. "Ball verloren") ---
+        // Ein Spieler ist "erledigt" für ein Loch, wenn er einen gültigen Score hat ODER den Ball verloren hat.
+        function holePoints(m, h) {
+            if (h.par === null) return { p1: 0, p2: 0 };
+            const p1Lost = !!h.p1Lost, p2Lost = !!h.p2Lost;
+            const p1Ok = isPlayed(h.p1Strokes), p2Ok = isPlayed(h.p2Strokes);
+            if (!((p1Ok || p1Lost) && (p2Ok || p2Lost))) return { p1: 0, p2: 0 }; // Loch noch nicht entschieden
+            if (p1Lost && p2Lost) return { p1: 0, p2: 0 };                         // beide verloren -> keine Punkte
+            const soloWin = (strokes, vorgabe) => {
+                if (strokes === 1) return 10;                                      // Hole-in-One
+                const eff = strokes - (vorgabe || 0);
+                return (eff - h.par <= -1) ? 3 : 2;                                // Birdie-Wertung sonst Lochgewinn
+            };
+            if (p1Lost) return { p1: 0, p2: p2Ok ? soloWin(h.p2Strokes, h.p2Vorgabe) : 0 };
+            if (p2Lost) return { p1: p1Ok ? soloWin(h.p1Strokes, h.p1Vorgabe) : 0, p2: 0 };
+            // Normalfall: beide haben einen gültigen Score (bestehende Regeln, unverändert)
+            const eff1 = h.p1Strokes - (h.p1Vorgabe || 0), eff2 = h.p2Strokes - (h.p2Vorgabe || 0);
+            if (h.p1Strokes === 1 && h.p2Strokes === 1) return (m.p1.hcp > m.p2.hcp) ? { p1: 1, p2: 0 } : { p1: 0, p2: 1 };
+            if (h.p1Strokes === 1) return { p1: 10, p2: 0 };
+            if (h.p2Strokes === 1) return { p1: 0, p2: 10 };
+            if (eff1 < eff2) return { p1: (eff1 - h.par <= -1) ? 3 : 2, p2: 0 };
+            if (eff2 < eff1) return { p1: 0, p2: (eff2 - h.par <= -1) ? 3 : 2 };
+            if (m.p1.hcp > m.p2.hcp) return { p1: 1, p2: 0 };
+            if (m.p2.hcp > m.p1.hcp) return { p1: 0, p2: 1 };
+            return { p1: 1, p2: 1 };
+        }
+
+        // Gewinner des Lochs im klassischen Lochspiel (Netto-Schläge): 1, 2 oder 0 (offen/unentschieden)
+        function holeWinner(h) {
+            if (h.par === null) return 0;
+            const p1Lost = !!h.p1Lost, p2Lost = !!h.p2Lost;
+            const p1Ok = isPlayed(h.p1Strokes), p2Ok = isPlayed(h.p2Strokes);
+            if (!((p1Ok || p1Lost) && (p2Ok || p2Lost))) return 0;
+            if (p1Lost && p2Lost) return 0;
+            if (p1Lost) return p2Ok ? 2 : 0;
+            if (p2Lost) return p1Ok ? 1 : 0;
+            const eff1 = h.p1Strokes - (h.p1Vorgabe || 0), eff2 = h.p2Strokes - (h.p2Vorgabe || 0);
+            if (eff1 < eff2) return 1;
+            if (eff2 < eff1) return 2;
+            return 0;
         }
 
         // Ein Loch zählt erst, wenn ein gültiger Score (>= 1) eingetragen ist.
@@ -1105,16 +1203,8 @@
         function generateFinanceHtml(matchObj) {
             let totalP1Points = 0; let totalP2Points = 0;
             matchObj.holes.forEach((h) => {
-                if(h.par === null || !isPlayed(h.p1Strokes) || !isPlayed(h.p2Strokes)) return;
-                let effS1 = h.p1Strokes - (h.p1Vorgabe || 0);
-                let effS2 = h.p2Strokes - (h.p2Vorgabe || 0);
-                let p1HolePoints = 0; let p2HolePoints = 0;
-                if (h.p1Strokes === 1 && h.p2Strokes === 1) { if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1; }
-                else if (h.p1Strokes === 1) p1HolePoints = 10; else if (h.p2Strokes === 1) p2HolePoints = 10;
-                else if (effS1 < effS2) p1HolePoints = (effS1 - h.par <= -1) ? 3 : 2; 
-                else if (effS2 < effS1) p2HolePoints = (effS2 - h.par <= -1) ? 3 : 2;
-                else if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else if (matchObj.p2.hcp > matchObj.p1.hcp) p2HolePoints = 1; else { p1HolePoints = 1; p2HolePoints = 1; }
-                totalP1Points += p1HolePoints; totalP2Points += p2HolePoints;
+                const pts = holePoints(matchObj, h);
+                totalP1Points += pts.p1; totalP2Points += pts.p2;
             });
 
             let p1BaseWin = totalP1Points - totalP2Points;
@@ -1152,7 +1242,7 @@
                 if (!pay.payer || forPlayer !== pay.payer || !pay.receiver || pay.amount <= 0) return "";
                 const ppUser = sanitizePaypal(pay.receiver.paypal);
                 if (!ppUser) return "";
-                const url = "https://paypal.me/" + ppUser + "/" + pay.amount.toFixed(2) + "EUR";
+                const url = "https://paypal.me/" + ppUser + "/" + payAmountForUrl(pay.amount) + "EUR";
                 return `<a href="${url}" target="_blank" rel="noopener" class="block text-center mt-1 text-white font-bold py-2 rounded-lg text-xs transition normal-case" style="background-color:#0070ba;">${pay.amount.toFixed(2)} € an ${pay.receiver.nick} per PayPal senden</a>`;
             };
 
@@ -1179,46 +1269,42 @@
                 if(h.par === null) return;
                 const p1ok = isPlayed(h.p1Strokes);
                 const p2ok = isPlayed(h.p2Strokes);
-                const holeScored = p1ok && p2ok;
-                let s1Str = p1ok ? h.p1Strokes : '-';
-                let s2Str = p2ok ? h.p2Strokes : '-';
-                let p1HolePoints = 0; let p2HolePoints = 0;
+                const p1Lost = !!h.p1Lost, p2Lost = !!h.p2Lost;
+                const resolved = (p1ok || p1Lost) && (p2ok || p2Lost);
+                const pts = holePoints(matchObj, h);
 
-                // laufende Schlag-Summen pro Spieler (unabhängig voneinander, nie NaN)
+                // laufende Schlag-Summen pro Spieler (nur echte Scores, nie NaN)
                 if (p1ok) totalS1 += h.p1Strokes;
                 if (p2ok) totalS2 += h.p2Strokes;
+                if (resolved) { totalPar += h.par; totalP1Points += pts.p1; totalP2Points += pts.p2; }
 
-                if (holeScored) {
-                    totalPar += h.par;
-                    let effS1 = h.p1Strokes - (h.p1Vorgabe || 0);
-                    let effS2 = h.p2Strokes - (h.p2Vorgabe || 0);
+                // Schlag-Anzeige je Spieler (X = Ball verloren)
+                let s1Str;
+                if (p1Lost) s1Str = p1ok ? `<span class="font-bold text-red-500">${h.p1Strokes}<span class="text-[9px]"> ✗</span></span>` : `<span class="font-bold text-red-500">X</span>`;
+                else if (!p1ok) s1Str = '-';
+                else if (h.p1Strokes === 1) s1Str = `[HIO]`;
+                else if ((h.p1Strokes - (h.p1Vorgabe || 0) - h.par) <= -1) s1Str = `<span class="birdie-circle">${h.p1Strokes}</span>`;
+                else s1Str = h.p1Strokes;
+                let s2Str;
+                if (p2Lost) s2Str = p2ok ? `<span class="font-bold text-red-500">${h.p2Strokes}<span class="text-[9px]"> ✗</span></span>` : `<span class="font-bold text-red-500">X</span>`;
+                else if (!p2ok) s2Str = '-';
+                else if (h.p2Strokes === 1) s2Str = `[HIO]`;
+                else if ((h.p2Strokes - (h.p2Vorgabe || 0) - h.par) <= -1) s2Str = `<span class="birdie-circle">${h.p2Strokes}</span>`;
+                else s2Str = h.p2Strokes;
 
-                    if (h.p1Strokes === 1 && h.p2Strokes === 1) {
-                        if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1;
-                    } else if (h.p1Strokes === 1) p1HolePoints = 10; else if (h.p2Strokes === 1) p2HolePoints = 10;
-                    else if (effS1 < effS2) p1HolePoints = (effS1 - h.par <= -1) ? 3 : 2;
-                    else if (effS2 < effS1) p2HolePoints = (effS2 - h.par <= -1) ? 3 : 2;
-                    else if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else if (matchObj.p2.hcp > matchObj.p1.hcp) p2HolePoints = 1; else { p1HolePoints = 1; p2HolePoints = 1; }
-
-                    totalP1Points += p1HolePoints; totalP2Points += p2HolePoints;
-
-                    if(h.p1Strokes === 1) s1Str = `[HIO]`;
-                    else if((effS1 - h.par <= -1)) s1Str = `<span class="birdie-circle">${h.p1Strokes}</span>`;
-
-                    if(h.p2Strokes === 1) s2Str = `[HIO]`;
-                    else if((effS2 - h.par <= -1)) s2Str = `<span class="birdie-circle">${h.p2Strokes}</span>`;
+                if (!p1Lost) {
+                    if(h.p1Lady) s1Str = `<span class="font-bold text-red-400">${p1ok ? h.p1Strokes : ''}(L)</span>`;
+                    if(h.p1MulliganHole) s1Str += ` <span class="text-blue-400 font-bold text-[9px]">[M]</span>`;
+                    if((h.p1Vorgabe || 0) > 0) s1Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
+                }
+                if (!p2Lost) {
+                    if(h.p2Lady) s2Str = `<span class="font-bold text-red-400">${p2ok ? h.p2Strokes : ''}(L)</span>`;
+                    if(h.p2MulliganHole) s2Str += ` <span class="text-blue-400 font-bold text-[9px]">[M]</span>`;
+                    if((h.p2Vorgabe || 0) > 0) s2Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
                 }
 
-                if(h.p1Lady) s1Str = `<span class="font-bold text-red-400">${p1ok ? h.p1Strokes : ''}(L)</span>`;
-                if(h.p1MulliganHole) s1Str += ` <span class="text-blue-400 font-bold text-[9px]">[M]</span>`;
-                if((h.p1Vorgabe || 0) > 0) s1Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
-
-                if(h.p2Lady) s2Str = `<span class="font-bold text-red-400">${p2ok ? h.p2Strokes : ''}(L)</span>`;
-                if(h.p2MulliganHole) s2Str += ` <span class="text-blue-400 font-bold text-[9px]">[M]</span>`;
-                if((h.p2Vorgabe || 0) > 0) s2Str += ` <span class="text-emerald-400 font-bold text-[9px]">[-1]</span>`;
-
-                let p1HoleDisplay = holeScored ? p1HolePoints : '-';
-                let p2HoleDisplay = holeScored ? p2HolePoints : '-';
+                let p1HoleDisplay = resolved ? pts.p1 : '-';
+                let p2HoleDisplay = resolved ? pts.p2 : '-';
 
                 const rowAttr = isLive
                     ? `onclick="jumpToHole(${idx})" class="border-b border-zinc-900 text-center text-xs cursor-pointer hover:bg-zinc-800/60"`
@@ -1238,7 +1324,7 @@
                 correctionsHtml = `<details class="mt-3 text-[10px] text-gray-500"><summary class="cursor-pointer text-gray-400 select-none">✎ ${editLog.length} Korrektur${editLog.length === 1 ? '' : 'en'} (Game Master: ${matchObj.gm})</summary><div class="mt-1 space-y-0.5 pl-3 font-mono">${items}</div></details>`;
             }
 
-            return gmHtml + liveHtml + `<table class="w-full text-left border-collapse mt-2"><thead><tr class="border-b-2 border-zinc-800 text-xs text-center font-bold"><th class="p-2" colspan="2">Endergebnis:</th><th class="p-2 bg-schmelle-col text-white" colspan="2">${matchObj.p1.nick} (${totalP1Points} Pkt)</th><th class="p-2 bg-koenig-col text-white" colspan="2">${matchObj.p2.nick} (${totalP2Points} Pkt)</th></tr><tr class="border-b border-zinc-800 text-center text-[10px] uppercase text-gray-400"><th class="p-2">Bahn</th><th class="p-2 bg-zinc-950">Par</th><th class="p-2 bg-schmelle-col text-gray-300">Sch.</th><th class="p-2 bg-schmelle-col text-emerald-500">Pkt.</th><th class="p-2 bg-koenig-col text-gray-300">Sch.</th><th class="p-2 bg-koenig-col text-emerald-500">Pkt.</th></tr></thead><tbody>${rowsHtml}<tr class="bg-zinc-950 text-center text-xs border-t border-zinc-900"><td class="p-2 text-gray-500">Summe</td><td class="p-2 bg-zinc-950 text-gray-300 font-bold">${totalPar}</td><td class="p-2 bg-schmelle-col text-gray-400">${totalS1}</td><td class="p-2 bg-schmelle-col text-emerald-600">${totalP1Points}</td><td class="p-2 bg-koenig-col text-gray-400">${totalS2}</td><td class="p-2 bg-koenig-col text-emerald-600">${totalP2Points}</td></tr><tr class="bg-zinc-900 text-center text-xs font-bold border-t-2 border-zinc-800"><td class="p-2 text-gray-400" colspan="2">Endstand</td><td class="p-2 bg-schmelle-col text-white">${totalS1}</td><td class="p-2 bg-schmelle-col text-emerald-400 text-sm">${totalP1Points}</td><td class="p-2 bg-koenig-col text-white">${totalS2}</td><td class="p-2 bg-koenig-col text-emerald-400 text-sm">${totalP2Points}</td></tr><tr class="bg-zinc-950 border-t-2 border-zinc-700"><td class="p-3 text-emerald-400 tracking-widest text-sm font-mono align-top text-center" colspan="2">$$$</td><td class="p-3" colspan="4">${financeBlock}</td></tr></tbody></table><div class="mt-4 pt-3 border-t border-zinc-900 text-[10px] text-gray-400 space-y-0.5 font-mono"><div class="text-gray-300 font-bold">Punkte:</div><div>Lochgewinn: 2 Punkte</div><div>Gleichstand: 1 Punkt (höheres HCP)</div><div>Birdie-Wertung: 3 Punkte</div><div>Hole-in-One: 10 Punkte</div><div class="py-1"></div><div class="text-gray-300 font-bold">Zeichen:</div><div><span class="border border-emerald-500 px-1 rounded-full text-[9px]">X</span> = Birdie-Wertung</div><div><span class="font-bold text-white">[HIO]</span> = Hole-in-One</div><div><span class="font-bold text-red-400">(L)</span> = Lady am Abschlag (Kein Minuspunkt im Match)</div><div><span class="text-blue-400 font-bold">[M]</span> = Mulligan genutzt</div><div><span class="text-emerald-400 font-bold">[-X]</span> = Gekaufter Joker (Minusschlag)</div></div>` + correctionsHtml;
+            return gmHtml + liveHtml + `<table class="w-full text-left border-collapse mt-2"><thead><tr class="border-b-2 border-zinc-800 text-xs text-center font-bold"><th class="p-2" colspan="2">Endergebnis:</th><th class="p-2 bg-schmelle-col text-white" colspan="2">${matchObj.p1.nick} (${totalP1Points} Pkt)</th><th class="p-2 bg-koenig-col text-white" colspan="2">${matchObj.p2.nick} (${totalP2Points} Pkt)</th></tr><tr class="border-b border-zinc-800 text-center text-[10px] uppercase text-gray-400"><th class="p-2">Bahn</th><th class="p-2 bg-zinc-950">Par</th><th class="p-2 bg-schmelle-col text-gray-300">Sch.</th><th class="p-2 bg-schmelle-col text-emerald-500">Pkt.</th><th class="p-2 bg-koenig-col text-gray-300">Sch.</th><th class="p-2 bg-koenig-col text-emerald-500">Pkt.</th></tr></thead><tbody>${rowsHtml}<tr class="bg-zinc-950 text-center text-xs border-t border-zinc-900"><td class="p-2 text-gray-500">Summe</td><td class="p-2 bg-zinc-950 text-gray-300 font-bold">${totalPar}</td><td class="p-2 bg-schmelle-col text-gray-400">${totalS1}</td><td class="p-2 bg-schmelle-col text-emerald-600">${totalP1Points}</td><td class="p-2 bg-koenig-col text-gray-400">${totalS2}</td><td class="p-2 bg-koenig-col text-emerald-600">${totalP2Points}</td></tr><tr class="bg-zinc-900 text-center text-xs font-bold border-t-2 border-zinc-800"><td class="p-2 text-gray-400" colspan="2">Endstand</td><td class="p-2 bg-schmelle-col text-white">${totalS1}</td><td class="p-2 bg-schmelle-col text-emerald-400 text-sm">${totalP1Points}</td><td class="p-2 bg-koenig-col text-white">${totalS2}</td><td class="p-2 bg-koenig-col text-emerald-400 text-sm">${totalP2Points}</td></tr><tr class="bg-zinc-950 border-t-2 border-zinc-700"><td class="p-3 text-emerald-400 tracking-widest text-sm font-mono align-top text-center" colspan="2">$$$</td><td class="p-3" colspan="4">${financeBlock}</td></tr></tbody></table><div class="mt-4 pt-3 border-t border-zinc-900 text-[10px] text-gray-400 space-y-0.5 font-mono"><div class="text-gray-300 font-bold">Punkte:</div><div>Lochgewinn: 2 Punkte</div><div>Gleichstand: 1 Punkt (höheres HCP)</div><div>Birdie-Wertung: 3 Punkte</div><div>Hole-in-One: 10 Punkte</div><div class="py-1"></div><div class="text-gray-300 font-bold">Zeichen:</div><div><span class="border border-emerald-500 px-1 rounded-full text-[9px]">X</span> = Birdie-Wertung</div><div><span class="font-bold text-red-500">X</span> = Loch verloren (Ball nicht gefunden)</div><div><span class="font-bold text-white">[HIO]</span> = Hole-in-One</div><div><span class="font-bold text-red-400">(L)</span> = Lady am Abschlag (Kein Minuspunkt im Match)</div><div><span class="text-blue-400 font-bold">[M]</span> = Mulligan genutzt</div><div><span class="text-emerald-400 font-bold">[-X]</span> = Gekaufter Joker (Minusschlag)</div></div>` + correctionsHtml;
         }
 
         function renderTotalSummary() {
@@ -1254,26 +1340,55 @@
                 : `<button onclick="finishMatch()" class="w-full bg-white text-black font-bold py-2.5 rounded-xl text-sm transition shadow hover:bg-gray-200 uppercase tracking-wider">Speichern und Schließen</button>`;
             const kurzHint = isKurz ? `<div class="text-[10px] text-gray-500 text-center italic">Kurzplatz: Übungsrunde – wird nicht gespeichert und zählt nicht in die Statistik.</div>` : '';
 
-            document.getElementById('dynamic-nav-container').innerHTML = `<div class="space-y-3 w-full">${kurzHint}<button onclick="shareSpecificMatch()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-sm transition shadow uppercase tracking-wider">Ergebnis teilen</button>${closeBtn}</div>`;
+            // Stechen-Block bei Unentschieden (Löcher ODER Punkte gleich)
+            let stechenBlock = '';
+            if (isMatchDrawn(currentMatch)) {
+                if (currentMatch.tiebreak && currentMatch.tiebreak.winner) {
+                    const tw = currentMatch.tiebreak.winner === 'p1' ? currentMatch.p1.nick : currentMatch.p2.nick;
+                    const tm = currentMatch.tiebreak.type === 'chip' ? 'Auschippen' : 'Ausputten';
+                    stechenBlock = `<div class="bg-emerald-950/40 border border-emerald-800 rounded-xl p-2.5 text-center"><div class="text-xs text-emerald-300 font-bold uppercase tracking-wide">Stechen: ${tw} siegt im ${tm}</div><button onclick="openStechen()" class="text-[10px] text-gray-400 underline mt-1">ändern</button></div>`;
+                } else {
+                    stechenBlock = `<button onclick="openStechen()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-sm transition shadow uppercase tracking-wider">Unentschieden entscheiden (Stechen)</button>`;
+                }
+            }
+
+            document.getElementById('dynamic-nav-container').innerHTML = `<div class="space-y-3 w-full">${kurzHint}${stechenBlock}<button onclick="shareSpecificMatch()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-sm transition shadow uppercase tracking-wider">Ergebnis teilen</button>${closeBtn}</div>`;
             document.getElementById('dormie-banner').classList.add('hidden'); zone.innerHTML = buildTableHTML(currentMatch, false);
+        }
+
+        // --- STECHEN (Unentschieden entscheiden) ---
+        function openStechen() {
+            const wSel = document.getElementById('stechen-winner');
+            wSel.options[0].text = currentMatch.p1.nick;
+            wSel.options[1].text = currentMatch.p2.nick;
+            if (currentMatch.tiebreak) {
+                document.getElementById('stechen-type').value = currentMatch.tiebreak.type || 'putt';
+                wSel.value = currentMatch.tiebreak.winner || 'p1';
+            } else {
+                document.getElementById('stechen-type').value = 'putt';
+                wSel.value = 'p1';
+            }
+            document.getElementById('stechen-modal').classList.remove('hidden');
+        }
+
+        function closeStechen() {
+            document.getElementById('stechen-modal').classList.add('hidden');
+        }
+
+        function confirmStechen() {
+            const type = document.getElementById('stechen-type').value;
+            const winner = document.getElementById('stechen-winner').value;
+            currentMatch.tiebreak = { type: type, winner: winner };
+            autoSave();
+            document.getElementById('stechen-modal').classList.add('hidden');
+            renderTotalSummary();
         }
 
         function calculateScores() {
             let p1TotalPoints = 0; let p2TotalPoints = 0;
             currentMatch.holes.forEach((hole) => {
-                if(hole.par === null) return;
-                let p1HolePoints = 0; let p2HolePoints = 0;
-                const s1 = hole.p1Strokes; const s2 = hole.p2Strokes;
-                if (isPlayed(s1) && isPlayed(s2)) {
-                    let effS1 = s1 - (hole.p1Vorgabe || 0);
-                    let effS2 = s2 - (hole.p2Vorgabe || 0);
-
-                    if (s1 === 1 && s2 === 1) { if (currentMatch.p1.hcp > currentMatch.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1; }
-                    else if (s1 === 1) p1HolePoints = 10; else if (s2 === 1) p2HolePoints = 10;
-                    else if (effS1 < effS2) p1HolePoints = (effS1 - hole.par <= -1) ? 3 : 2; else if (effS2 < effS1) p2HolePoints = (effS2 - hole.par <= -1) ? 3 : 2;
-                    else if (currentMatch.p1.hcp > currentMatch.p2.hcp) p1HolePoints = 1; else if (currentMatch.p2.hcp > currentMatch.p1.hcp) p2HolePoints = 1; else { p1HolePoints = 1; p2HolePoints = 1; }
-                }
-                p1TotalPoints += p1HolePoints; p2TotalPoints += p2HolePoints;
+                const pts = holePoints(currentMatch, hole);
+                p1TotalPoints += pts.p1; p2TotalPoints += pts.p2;
             });
             let p1Ladys = 0; let p2Ladys = 0;
             currentMatch.holes.forEach(h => { if(h.p1Lady) p1Ladys++; if(h.p2Lady) p2Ladys++; });
@@ -1290,18 +1405,8 @@
                 if(h.par === null) return;
                 if (isPlayed(h.p1Strokes)) totalP1Strokes += h.p1Strokes;
                 if (isPlayed(h.p2Strokes)) totalP2Strokes += h.p2Strokes;
-                let p1HolePoints = 0; let p2HolePoints = 0;
-                if (isPlayed(h.p1Strokes) && isPlayed(h.p2Strokes)) {
-                    let effS1 = h.p1Strokes - (h.p1Vorgabe || 0);
-                    let effS2 = h.p2Strokes - (h.p2Vorgabe || 0);
-
-                    if (h.p1Strokes === 1 && h.p2Strokes === 1) { if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else p2HolePoints = 1; }
-                    else if (h.p1Strokes === 1) p1HolePoints = 10; else if (h.p2Strokes === 1) p2HolePoints = 10;
-                    else if (effS1 < effS2) p1HolePoints = (effS1 - h.par <= -1) ? 3 : 2; 
-                    else if (effS2 < effS1) p2HolePoints = (effS2 - h.par <= -1) ? 3 : 2;
-                    else if (matchObj.p1.hcp > matchObj.p2.hcp) p1HolePoints = 1; else if (matchObj.p2.hcp > matchObj.p1.hcp) p2HolePoints = 1; else { p1HolePoints = 1; p2HolePoints = 1; }
-                }
-                totalP1Points += p1HolePoints; totalP2Points += p2HolePoints;
+                const pts = holePoints(matchObj, h);
+                totalP1Points += pts.p1; totalP2Points += pts.p2;
             });
             
             let p1BaseWin = totalP1Points - totalP2Points;
@@ -1336,7 +1441,7 @@
             const payShare = computePayment(p1Net, p2Net, matchObj.p1, matchObj.p2);
             if (payShare.payer && payShare.receiver && payShare.amount > 0) {
                 const ppUser = sanitizePaypal(payShare.receiver.paypal);
-                if (ppUser) moneyResult += "\n" + payShare.payer.nick + " zahlt " + payShare.amount.toFixed(2) + " EUR an " + payShare.receiver.nick + " per PayPal: https://paypal.me/" + ppUser + "/" + payShare.amount.toFixed(2) + "EUR\n";
+                if (ppUser) moneyResult += "\n" + payShare.payer.nick + " zahlt " + payShare.amount.toFixed(2) + " EUR an " + payShare.receiver.nick + " per PayPal: https://paypal.me/" + ppUser + "/" + payAmountForUrl(payShare.amount) + "EUR\n";
             }
 
             return "TFGC ERGEBNIS\nSpieltag: " + matchObj.date + "\nPlatz: " + matchObj.course.toUpperCase() + "\nMatchplay: " + calculateClassicMatchplayString(matchObj) + "\n\nGamemaster: " + matchObj.gm + "\n\nPUNKTE-ENDSTAND:\n- " + matchObj.p1.nick + ": " + totalP1Points + " Spielpunkte (" + matchObj.p1.roundLadys + " Bierschulden-Ladys)\n- " + matchObj.p2.nick + ": " + totalP2Points + " Spielpunkte (" + matchObj.p2.roundLadys + " Bierschulden-Ladys)\n\nSCHLÄGE:\n- " + matchObj.p1.nick + ": " + totalP1Strokes + " Schläge\n- " + matchObj.p2.nick + ": " + totalP2Strokes + " Schläge\n\nFINANZEN:\n" + moneyResult;
@@ -1456,9 +1561,9 @@
             archive.forEach(m => {
                 if (!inSeason(m)) return;
                 counted++;
-                const wins = calculateHoleWins(m);
-                if (wins.p1Wins > wins.p2Wins) schmelleWins++;
-                else if (wins.p2Wins > wins.p1Wins) koenigWins++;
+                const mw = matchWinner(m);
+                if (mw === 1) schmelleWins++;
+                else if (mw === 2) koenigWins++;
             });
             const label = selectedSeason === 'all' ? "Gesamt" : seasonLabel(parseInt(selectedSeason));
             statsEl.innerText = `${label}: S ${schmelleWins} | K ${koenigWins} (${counted} Spiele)`;
@@ -1520,15 +1625,8 @@
         function matchPoints(m) {
             let p1 = 0, p2 = 0;
             (m.holes || []).forEach(h => {
-                if (h.par === null || !isPlayed(h.p1Strokes) || !isPlayed(h.p2Strokes)) return;
-                const eff1 = h.p1Strokes - (h.p1Vorgabe || 0), eff2 = h.p2Strokes - (h.p2Vorgabe || 0);
-                let a = 0, b = 0;
-                if (h.p1Strokes === 1 && h.p2Strokes === 1) { if (m.p1.hcp > m.p2.hcp) a = 1; else b = 1; }
-                else if (h.p1Strokes === 1) a = 10; else if (h.p2Strokes === 1) b = 10;
-                else if (eff1 < eff2) a = (eff1 - h.par <= -1) ? 3 : 2;
-                else if (eff2 < eff1) b = (eff2 - h.par <= -1) ? 3 : 2;
-                else if (m.p1.hcp > m.p2.hcp) a = 1; else if (m.p2.hcp > m.p1.hcp) b = 1; else { a = 1; b = 1; }
-                p1 += a; p2 += b;
+                const pts = holePoints(m, h);
+                p1 += pts.p1; p2 += pts.p2;
             });
             return { p1: p1, p2: p2 };
         }
@@ -1557,11 +1655,10 @@
             let best1 = null, best2 = null; // {toPar, course, date}
 
             games.forEach(m => {
-                const w = calculateHoleWins(m);
-                let winner = 0;
-                if (w.p1Wins > w.p2Wins) { wins1++; winner = 1; }
-                else if (w.p2Wins > w.p1Wins) { wins2++; winner = 2; }
-                else { allSquare++; }
+                const winner = matchWinner(m);
+                if (winner === 1) wins1++;
+                else if (winner === 2) wins2++;
+                else allSquare++;
                 if (courseWins[m.course]) { if (winner === 1) courseWins[m.course][0]++; else if (winner === 2) courseWins[m.course][1]++; }
 
                 const pts = matchPoints(m);
@@ -1592,8 +1689,8 @@
             // Aktuelle Serie (jüngste Spiele zuerst)
             let streakName = "", streakCount = 0;
             for (let i = games.length - 1; i >= 0; i--) {
-                const w = calculateHoleWins(games[i]);
-                let win = w.p1Wins > w.p2Wins ? NAME1 : (w.p2Wins > w.p1Wins ? NAME2 : null);
+                const mw = matchWinner(games[i]);
+                let win = mw === 1 ? NAME1 : (mw === 2 ? NAME2 : null);
                 if (win === null) break;
                 if (streakCount === 0) { streakName = win; streakCount = 1; }
                 else if (win === streakName) streakCount++;
@@ -1657,13 +1754,59 @@
         }
 
         function calculateClassicMatchplayString(matchObj) {
+            // Falls das Match per Stechen entschieden wurde, hat das Vorrang.
+            if (matchObj.tiebreak && (matchObj.tiebreak.winner === 'p1' || matchObj.tiebreak.winner === 'p2')) {
+                const nick = matchObj.tiebreak.winner === 'p1' ? matchObj.p1.nick : matchObj.p2.nick;
+                const method = matchObj.tiebreak.type === 'chip' ? 'Auschippen' : 'Ausputten';
+                return "Remis · " + nick + " (" + method + ")";
+            }
             const wins = calculateHoleWins(matchObj);
             if(wins.p1Wins > wins.p2Wins) return matchObj.p1.nick + " " + (wins.p1Wins - wins.p2Wins) + " auf";
             if(wins.p2Wins > wins.p1Wins) return matchObj.p2.nick + " " + (wins.p2Wins - wins.p1Wins) + " auf";
             return "All Square";
         }
 
+        // Endgültiger Match-Sieger: 1 (Spieler 1), 2 (Spieler 2) oder 0 (echtes Remis ohne Stechen).
+        // Ein Stechen-Ergebnis hat immer Vorrang vor der Loch-/Punktewertung.
+        function matchWinner(m) {
+            if (m.tiebreak && (m.tiebreak.winner === 'p1' || m.tiebreak.winner === 'p2')) {
+                return m.tiebreak.winner === 'p1' ? 1 : 2;
+            }
+            const w = calculateHoleWins(m);
+            if (w.p1Wins > w.p2Wins) return 1;
+            if (w.p2Wins > w.p1Wins) return 2;
+            return 0;
+        }
+
+        // Prüft, ob ein Match unentschieden ist (Löcher ODER Punkte gleich) -> Stechen möglich.
+        function isMatchDrawn(m) {
+            const w = calculateHoleWins(m);
+            const holesTied = w.p1Wins === w.p2Wins;
+            let pts = matchPoints(m);
+            const pointsTied = pts.p1 === pts.p2;
+            return holesTied || pointsTied;
+        }
+
         function closeModal() { document.getElementById('global-modal').classList.add('hidden'); }
+
+        // Kurze, öffentliche Änderungshistorie (ohne Passwort) – über die Versionszeile unten.
+        function openChangelog() {
+            document.getElementById('modal-title').innerText = "Änderungen · v1.8";
+            document.getElementById('modal-content').innerHTML = `
+                <ul class="text-xs text-gray-300 space-y-1.5 list-disc pl-4">
+                    <li>Stechen bei Unentschieden: Ausputten/Auschippen + Sieger wählen.</li>
+                    <li>"Ball verloren" pro Bahn: das Loch geht an den Gegner, die eigenen Schläge zählen weiter.</li>
+                    <li>Kurzplatz als Übungsmodus: voll spielbar, aber ohne Speichern und ohne Statistik.</li>
+                    <li>"1vs1"-Statistik aufklappbar unter dem Archiv (Siege, Serie, Birdies, Euro-Bilanz …).</li>
+                    <li>Joker: Auswahl erst beim Spielstart und nur auf Par 4/5.</li>
+                    <li>Spieltag-Planer mit Uhrzeit in 10-Minuten-Schritten; "Platz auslosen".</li>
+                    <li>Live-Score korrigierbar (Bahn antippen) mit dezentem Korrektur-Logbuch.</li>
+                    <li>Datensicherheit: automatische Backups, kein Überschreiben ohne sicheren Stand.</li>
+                    <li>PayPal-Zahlung mit korrekt vorbelegtem Betrag im Link.</li>
+                </ul>
+                <div class="text-[10px] text-gray-500 mt-3">Stand: Juni 2026 · Ausführliche Historie im Datenverwaltungs-Menü (Zahnrad).</div>`;
+            document.getElementById('global-modal').classList.remove('hidden');
+        }
 
         // Startet die App und lädt die Daten aus der Cloud. Läuft garantiert genau einmal.
         function startApp() {
