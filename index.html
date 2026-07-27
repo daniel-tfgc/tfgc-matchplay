@@ -1522,6 +1522,35 @@
             return "Season " + (year - SEASON_BASE_YEAR) + " (" + year + ")";
         }
 
+        // --- ABRECHNUNGS-STICHTAG ---
+        // Am SETTLEMENT_DATE wurde die bisherige Gesamtbilanz real ausgeglichen/bezahlt.
+        // Die Gesamtbilanz (seit jeher) läuft unverändert weiter; zusätzlich zeigt das Dashboard
+        // eine zweite, unabhängige Zahl "Bilanz seit <Stichtag>", die nur Spiele NACH diesem Datum zählt.
+        // Sobald ihr das nächste Mal real bezahlt, hier einfach Datum + Label aktualisieren.
+        const SETTLEMENT_DATE = new Date(2026, 6, 26, 23, 59, 59); // 26.07.2026
+        const SETTLEMENT_DATE_LABEL = "26.07.2026";
+
+        function getMatchDateObj(m) {
+            // wie getMatchYear, aber gibt das volle Datum zurück (für Stichtag-Vergleiche)
+            if (m && m.rawDate) {
+                const d = new Date(m.rawDate);
+                if (!isNaN(d.getTime())) return d;
+            }
+            if (m && m.date) {
+                const bits = m.date.split(',')[0].trim().split('.');
+                if (bits.length === 3) {
+                    const day = parseInt(bits[0]), month = parseInt(bits[1]), year = parseInt(bits[2]);
+                    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) return new Date(year, month - 1, day);
+                }
+            }
+            return null;
+        }
+
+        function isAfterSettlement(m) {
+            const d = getMatchDateObj(m);
+            return d !== null && d.getTime() > SETTLEMENT_DATE.getTime();
+        }
+
         function populateSeasonSelect() {
             const sel = document.getElementById('season-select');
             if (!sel) return;
@@ -1686,6 +1715,19 @@
                 if (full2 === playable && playable > 0) { const tp = gp2 - par2; if (best2 === null || tp < best2.toPar) best2 = { toPar: tp, course: m.course, date: dateShort }; }
             });
 
+            // Laufende Bilanz seit dem letzten realen Ausgleich (SETTLEMENT_DATE) – unabhängig von der
+            // Saison-Auswahl oben, läuft immer über das komplette Archiv seit dem Stichtag.
+            let euroSince1 = 0, euroSince2 = 0, gamesSinceCount = 0;
+            archive.forEach(m => {
+                if (!m || !m.holes || m.course === 'kurz') return;
+                if (!isAfterSettlement(m)) return;
+                const pts = matchPoints(m);
+                const base1 = pts.p1 - pts.p2;
+                euroSince1 += base1 - (m.p1.boughtVorgaben || 0) * 0.50;
+                euroSince2 += -base1 - (m.p2.boughtVorgaben || 0) * 0.50;
+                gamesSinceCount++;
+            });
+
             // Aktuelle Serie (jüngste Spiele zuerst)
             let streakName = "", streakCount = 0;
             for (let i = games.length - 1; i >= 0; i--) {
@@ -1701,6 +1743,7 @@
             const avg1 = holes1 > 0 ? (strokes1 / holes1).toFixed(1) : "–";
             const avg2 = holes2 > 0 ? (strokes2 / holes2).toFixed(1) : "–";
             const euroLead = euro1 > euro2 ? `${NAME1} liegt +${(euro1 - euro2).toFixed(2)} € vorne` : (euro2 > euro1 ? `${NAME2} liegt +${(euro2 - euro1).toFixed(2)} € vorne` : "Ausgeglichen (0 €)");
+            const euroSinceLead = gamesSinceCount === 0 ? "Noch keine Spiele seit dem Stichtag" : (euroSince1 > euroSince2 ? `${NAME1} liegt +${(euroSince1 - euroSince2).toFixed(2)} € vorne` : (euroSince2 > euroSince1 ? `${NAME2} liegt +${(euroSince2 - euroSince1).toFixed(2)} € vorne` : "Ausgeglichen (0 €)"));
             const fmtBest = (b) => b === null ? "–" : `${b.toPar === 0 ? 'Par' : (b.toPar > 0 ? '+' + b.toPar : b.toPar)} (${b.course.toUpperCase()}, ${b.date})`;
 
             const row = (lbl, a, b) => `<div class="grid grid-cols-3 gap-1 py-1 border-b border-zinc-900/70"><div class="text-gray-400">${lbl}</div><div class="text-center text-white font-semibold">${a}</div><div class="text-center text-white font-semibold">${b}</div></div>`;
@@ -1714,6 +1757,7 @@
             html += row("Birdies", birdies1, birdies2);
             html += row("Hole-in-Ones", hio1, hio2);
             html += full("Bilanz (Euro)", euroLead);
+            html += full("Bilanz seit " + SETTLEMENT_DATE_LABEL, euroSinceLead);
             html += row("Beste Runde (zu Par)", fmtBest(best1), fmtBest(best2));
             if (allSquare > 0) html += full("Unentschieden (All Square)", allSquare + "x");
             html += `<div class="mt-2 text-[10px] uppercase tracking-wider text-gray-500">Siege pro Platz</div>`;
