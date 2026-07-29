@@ -163,7 +163,7 @@
             <select id="course-select" class="w-full bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600">
                 <option value="nord">Nord (9 Loch - Par 32)</option>
                 <option value="sued">Süd (9 Loch - Par 34)</option>
-                <option value="west">West (9 Loch - Par 35)</option>
+                <option value="west">West (Aktuell nur 6 Bahnen spielbar)</option>
                 <option value="kurz">Kurzplatz (6 Loch - Par 18)</option>
             </select>
             <button id="btn-random-course" onclick="randomizeCourse()" class="w-full bg-zinc-900 hover:bg-zinc-800 text-xs text-gray-300 font-semibold py-2 rounded-lg transition uppercase tracking-wider border border-zinc-800">
@@ -399,7 +399,7 @@
         const courses = {
             nord: [4,3,3,4,4,4,3,4,3],
             sued: [4,3,5,4,3,5,3,4,3],
-            west: [4,4,4,5,3,4,4,3,4], // West komplett freigeschaltet (alle 9 Bahnen)
+            west: [4,4,4,null,null,null,4,3,4], // Bahnen 4/5/6 noch gesperrt; sobald spielbar: 5,3,4 einsetzen -> [4,4,4,5,3,4,4,3,4]
             kurz: [3,3,3,3,3,3] // Kurzplatz, 6 Bahnen, Par 18 (nicht im "Platz auslosen")
         };
 
