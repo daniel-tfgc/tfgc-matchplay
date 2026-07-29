@@ -163,7 +163,7 @@
             <select id="course-select" class="w-full bg-black border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-emerald-600">
                 <option value="nord">Nord (9 Loch - Par 32)</option>
                 <option value="sued">Süd (9 Loch - Par 34)</option>
-                <option value="west">West (Aktuell nur 6 Bahnen spielbar)</option>
+                <option value="west">West (9 Loch - Par 35)</option>
                 <option value="kurz">Kurzplatz (6 Loch - Par 18)</option>
             </select>
             <button id="btn-random-course" onclick="randomizeCourse()" class="w-full bg-zinc-900 hover:bg-zinc-800 text-xs text-gray-300 font-semibold py-2 rounded-lg transition uppercase tracking-wider border border-zinc-800">
@@ -364,7 +364,14 @@
             <div class="space-y-3 pt-2">
                 <button onclick="forceSyncToCloud()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white py-2.5 rounded-lg text-sm transition font-medium">Lokale Daten in Cloud zwingen</button>
             </div>
-            
+
+            <div class="mt-4 pt-4 border-t border-zinc-900 space-y-2">
+                <h4 class="text-[11px] font-bold text-emerald-600 uppercase">Match manuell nachtragen</h4>
+                <p class="text-[10px] text-gray-400">Für den Notfall: Falls ein Spiel wegen eines Fehlers nicht normal beendet werden konnte, hier den (von Claude) vorbereiteten Match-Text einfügen und speichern. Wird sicher ins Archiv übernommen (mit Backup wie immer).</p>
+                <textarea id="import-match-json" rows="4" placeholder="Match-Text hier einfügen..." class="w-full bg-black border border-zinc-800 rounded p-2 text-[10px] text-gray-300 font-mono focus:outline-none focus:border-emerald-600"></textarea>
+                <button onclick="importMatchFromJson()" class="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 rounded-lg text-xs transition font-medium border border-blue-700">Match ins Archiv übernehmen</button>
+            </div>
+
             <div class="mt-4 pt-4 border-t border-zinc-900 space-y-2">
                 <h4 class="text-[11px] font-bold text-emerald-600 uppercase">Änderungshistorie</h4>
                 <ul class="text-[10px] text-gray-400 space-y-1 list-disc pl-4">
@@ -392,7 +399,7 @@
         const courses = {
             nord: [4,3,3,4,4,4,3,4,3],
             sued: [4,3,5,4,3,5,3,4,3],
-            west: [4,4,4,null,null,null,4,3,4], // Bahnen 4/5/6 noch gesperrt; sobald spielbar: 5,3,4 einsetzen -> [4,4,4,5,3,4,4,3,4]
+            west: [4,4,4,5,3,4,4,3,4], // West komplett freigeschaltet (alle 9 Bahnen)
             kurz: [3,3,3,3,3,3] // Kurzplatz, 6 Bahnen, Par 18 (nicht im "Platz auslosen")
         };
 
@@ -558,6 +565,49 @@
                 alert("Daten wurden (mit Backup) in die Cloud geschrieben.");
             }
             closeAdminModal();
+        }
+
+        // --- NOTFALL: EIN MATCH MANUELL INS ARCHIV NACHTRAGEN ---
+        // Für Fälle, in denen eine Runde wegen eines Fehlers nicht normal über "Match Beenden" abgeschlossen
+        // werden konnte. Erwartet ein von Claude vorbereitetes Match-Objekt als JSON-Text.
+        async function importMatchFromJson() {
+            const ta = document.getElementById('import-match-json');
+            const raw = (ta.value || "").trim();
+            if (!raw) { alert("Bitte zuerst den Match-Text einfügen."); return; }
+
+            let match;
+            try {
+                match = JSON.parse(raw);
+            } catch (e) {
+                alert("Das sieht nicht nach gültigem Match-Text aus. Bitte den kompletten Text nochmal einfügen.");
+                return;
+            }
+
+            if (!match || !match.p1 || !match.p2 || !Array.isArray(match.holes)) {
+                alert("Der Match-Text ist unvollständig (p1/p2/holes fehlen). Bitte den kompletten Text von Claude verwenden.");
+                return;
+            }
+
+            // Duplikat-Schutz: gleiche id ODER gleiches Datum+Platz bereits im Archiv?
+            const alreadyExists = archive.some(m => m && ((match.id && m.id === match.id) || (m.date === match.date && m.course === match.course)));
+            if (alreadyExists) {
+                alert("Dieses Spiel scheint schon im Archiv zu sein (gleiches Datum + Platz gefunden). Es wurde nicht erneut hinzugefügt.");
+                return;
+            }
+
+            if (!confirm("Match vom " + (match.date || "?") + " (" + (match.course || "?").toUpperCase() + ") jetzt ins Archiv übernehmen?")) return;
+
+            archive.push(match);
+            await syncToCloud();
+            if (cloudLoaded) {
+                alert("Match wurde ins Archiv übernommen und sicher in der Cloud gespeichert.");
+                ta.value = "";
+                renderHistoryList();
+                populateSeasonSelect();
+                if (dashboardOpen) renderDashboard();
+            } else {
+                alert("Konnte nicht sicher gespeichert werden (keine Cloud-Verbindung). Bitte später erneut versuchen.");
+            }
         }
 
         // --- ZUFALLS-GM ---
